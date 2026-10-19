@@ -5,7 +5,7 @@ interface Env {
   GEMINI_API_KEY: string;
 }
 
-const GEMINI_ENDPOINT = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
+const GEMINI_ENDPOINT = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent';
 
 export const onRequestPost: PagesFunction<Env> = async (context) => {
   const corsHeaders = {
@@ -15,9 +15,10 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
   };
 
   try {
+    // Access API key from environment (set via wrangler pages secret)
     const apiKey = context.env.GEMINI_API_KEY;
     if (!apiKey) {
-      return new Response(JSON.stringify({ error: 'AI service not configured' }), {
+      return new Response(JSON.stringify({ error: 'AI service not configured. Please redeploy.' }), {
         status: 500,
         headers: { 'Content-Type': 'application/json', ...corsHeaders },
       });

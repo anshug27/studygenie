@@ -1,7 +1,23 @@
 ---
 import Layout from '../layouts/Layout.astro';
+
+const schema = {
+  '@context': 'https://schema.org',
+  '@type': 'WebApplication',
+  name: 'StudyGenie',
+  url: 'https://studygenie.pages.dev',
+  description: 'Free AI-powered study tools for students. Summarize notes, generate flashcards, create quizzes, solve math problems, grade essays, and plan study schedules.',
+  applicationCategory: 'EducationalApplication',
+  operatingSystem: 'Web',
+  offers: { '@type': 'Offer', price: '0', priceCurrency: 'INR', description: '5 free AI generations per day' },
+  audience: { '@type': 'EducationalAudience', educationalRole: 'student' },
+};
 ---
-<Layout title="StudyGenie - AI Study Companion | Summarize, Quiz, Flashcards">
+<Layout
+  title="StudyGenie - Free AI Study Tools | Summarize, Quiz, Flashcards, Math Solver"
+  description="Free AI study tools for students. Summarize notes, generate flashcards, create quizzes, solve math, grade essays, plan study schedules. No signup needed. Built for NEET, JEE, Board Exams."
+  schema={schema}
+>
 
   <!-- Hero Section -->
   <section class="max-w-6xl mx-auto px-4 pt-16 pb-20 text-center">
@@ -15,7 +31,7 @@ import Layout from '../layouts/Layout.astro';
     </h1>
 
     <p class="text-lg md:text-xl max-w-2xl mx-auto mb-8" style="color: var(--text-muted);">
-      Paste any text, article, or notes. Get instant summaries, flashcards, quizzes, and simple explanations. Powered by AI, built for students.
+      9 free AI tools: summarize notes, generate flashcards & quizzes, solve math, grade essays, plan study schedules, and more. Built for students.
     </p>
 
     <div class="flex flex-col sm:flex-row items-center justify-center gap-3 mb-8">
@@ -74,8 +90,8 @@ import Layout from '../layouts/Layout.astro';
   <!-- Features -->
   <section id="features" class="max-w-6xl mx-auto px-4 mb-20">
     <div class="text-center mb-12">
-      <h2 class="text-3xl md:text-4xl font-bold mb-4" style="color: var(--text);">Everything you need to ace your studies</h2>
-      <p class="text-lg" style="color: var(--text-muted);">Five powerful AI tools, one platform. All free.</p>
+      <h2 class="text-3xl md:text-4xl font-bold mb-4" style="color: var(--text);">9 AI tools to ace your studies</h2>
+      <p class="text-lg" style="color: var(--text-muted);">Every tool a student needs, powered by AI. All free.</p>
     </div>
 
     <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -103,23 +119,44 @@ import Layout from '../layouts/Layout.astro';
       <a href="/tools/explain" class="feature-card">
         <div class="text-3xl mb-3">💡</div>
         <h3 class="text-lg font-bold mb-2" style="color: var(--text);">Explain Like I'm 5</h3>
-        <p class="text-sm" style="color: var(--text-muted);">Confused by a concept? Get a simple explanation with analogies, examples, and step-by-step breakdowns.</p>
+        <p class="text-sm" style="color: var(--text-muted);">Confused by a concept? Get simple explanations with analogies, examples, and step-by-step breakdowns.</p>
+        <span class="inline-block mt-3 text-sm font-semibold" style="color: #6366f1;">Try it free &rarr;</span>
+      </a>
+
+      <a href="/tools/math" class="feature-card">
+        <div class="text-3xl mb-3">🔢</div>
+        <h3 class="text-lg font-bold mb-2" style="color: var(--text);">Math Solver</h3>
+        <p class="text-sm" style="color: var(--text-muted);">Solve algebra, calculus, geometry, and more. Get step-by-step solutions with explanations.</p>
+        <span class="inline-block mt-3 text-sm font-semibold" style="color: #6366f1;">Try it free &rarr;</span>
+      </a>
+
+      <a href="/tools/essay" class="feature-card">
+        <div class="text-3xl mb-3">✍️</div>
+        <h3 class="text-lg font-bold mb-2" style="color: var(--text);">Essay Grader</h3>
+        <p class="text-sm" style="color: var(--text-muted);">Get instant feedback on your essays. Scores for grammar, structure, vocabulary, and specific improvements.</p>
+        <span class="inline-block mt-3 text-sm font-semibold" style="color: #6366f1;">Try it free &rarr;</span>
+      </a>
+
+      <a href="/tools/planner" class="feature-card">
+        <div class="text-3xl mb-3">📅</div>
+        <h3 class="text-lg font-bold mb-2" style="color: var(--text);">Study Planner</h3>
+        <p class="text-sm" style="color: var(--text-muted);">Create a personalized study schedule for any exam. Weekly plans, daily routines, and revision strategy.</p>
+        <span class="inline-block mt-3 text-sm font-semibold" style="color: #6366f1;">Try it free &rarr;</span>
+      </a>
+
+      <a href="/tools/notes" class="feature-card">
+        <div class="text-3xl mb-3">�</div>
+        <h3 class="text-lg font-bold mb-2" style="color: var(--text);">Notes Organizer</h3>
+        <p class="text-sm" style="color: var(--text-muted);">Transform messy notes into structured, organized study material. Cornell notes, outlines, and more.</p>
         <span class="inline-block mt-3 text-sm font-semibold" style="color: #6366f1;">Try it free &rarr;</span>
       </a>
 
       <a href="/tools/youtube" class="feature-card">
         <div class="text-3xl mb-3">🎬</div>
         <h3 class="text-lg font-bold mb-2" style="color: var(--text);">YouTube Summarizer</h3>
-        <p class="text-sm" style="color: var(--text-muted);">Paste a YouTube video URL. Get a summary, key points, and timestamps without watching the full video.</p>
+        <p class="text-sm" style="color: var(--text-muted);">Paste a video transcript. Get a summary, key points, and timestamps without watching the full video.</p>
         <span class="inline-block mt-3 text-sm font-semibold" style="color: #6366f1;">Try it free &rarr;</span>
       </a>
-
-      <div class="feature-card" style="background: linear-gradient(135deg, rgba(99,102,241,0.05), rgba(236,72,153,0.05)); border-style: dashed;">
-        <div class="text-3xl mb-3">🚀</div>
-        <h3 class="text-lg font-bold mb-2" style="color: var(--text);">More Coming Soon</h3>
-        <p class="text-sm" style="color: var(--text-muted);">PDF upload, essay grader, math solver, study planner, and more. We ship new tools every week.</p>
-        <span class="inline-block mt-3 text-sm font-semibold" style="color: var(--text-muted);">Stay tuned</span>
-      </div>
     </div>
   </section>
 
@@ -160,8 +197,8 @@ import Layout from '../layouts/Layout.astro';
         </div>
         <ul class="text-sm space-y-3 mb-6 text-left" style="color: var(--text-muted);">
           <li class="flex items-center gap-2"><span style="color: #10b981;">✓</span> 5 AI generations per day</li>
-          <li class="flex items-center gap-2"><span style="color: #10b981;">✓</span> All 5 tools included</li>
-          <li class="flex items-center gap-2"><span style="color: #10b981;">✓</span> Summaries, flashcards, quizzes</li>
+          <li class="flex items-center gap-2"><span style="color: #10b981;">✓</span> All 9 AI tools included</li>
+          <li class="flex items-center gap-2"><span style="color: #10b981;">✓</span> Summarize, flashcards, quiz, math &amp; more</li>
           <li class="flex items-center gap-2"><span style="color: #10b981;">✓</span> No signup required</li>
           <li class="flex items-center gap-2"><span style="color: var(--text-muted);">-</span> Limited to 5 uses/day</li>
         </ul>
@@ -177,7 +214,7 @@ import Layout from '../layouts/Layout.astro';
         </div>
         <ul class="text-sm space-y-3 mb-6 text-left" style="color: var(--text-muted);">
           <li class="flex items-center gap-2"><span style="color: #10b981;">✓</span> Unlimited AI generations</li>
-          <li class="flex items-center gap-2"><span style="color: #10b981;">✓</span> All 5 tools included</li>
+          <li class="flex items-center gap-2"><span style="color: #10b981;">✓</span> All 9 AI tools included</li>
           <li class="flex items-center gap-2"><span style="color: #10b981;">✓</span> PDF upload support</li>
           <li class="flex items-center gap-2"><span style="color: #10b981;">✓</span> Priority AI processing</li>
           <li class="flex items-center gap-2"><span style="color: #10b981;">✓</span> Save & export notes</li>

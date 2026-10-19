@@ -1,0 +1,410 @@
+---
+import Layout from '../../layouts/Layout.astro';
+---
+<Layout title="AI Essay Grader - StudyGenie" description="Get instant AI feedback on your essays. Scores for structure, grammar, vocabulary, and coherence with actionable improvement tips." isTool={true}>
+
+  <div class="tool-container">
+    <div class="tool-header">
+      <h1>✍️ AI Essay Grader</h1>
+      <p>Get instant feedback on your essays and writing</p>
+    </div>
+
+    <!-- Input Area -->
+    <div class="tool-input-area">
+      <textarea id="essay-input" class="input" placeholder="Paste your essay here (minimum 100 characters)..." style="min-height: 240px;"></textarea>
+
+      <div class="flex items-center justify-between mt-3 flex-wrap gap-2">
+        <div class="flex items-center gap-3">
+          <span id="char-count" class="text-xs" style="color: var(--text-muted);">0 characters</span>
+          <select id="essay-type" class="input" style="width: auto; min-height: auto; padding: 0.5rem 0.75rem; font-size: 0.8125rem;">
+            <option value="Argumentative">Argumentative</option>
+            <option value="Descriptive">Descriptive</option>
+            <option value="Narrative">Narrative</option>
+            <option value="Expository">Expository</option>
+            <option value="Persuasive">Persuasive</option>
+          </select>
+        </div>
+        <div class="flex gap-2">
+          <button id="clear-btn" class="btn btn-ghost btn-sm">Clear</button>
+          <button id="grade-btn" class="btn btn-brand">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/></svg>
+            Grade My Essay
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    <div id="loading" class="hidden text-center py-12">
+      <div class="spinner spinner-dark mx-auto mb-3" style="width: 2rem; height: 2rem;"></div>
+      <p class="text-sm" style="color: var(--text-muted);">Analyzing your essay...</p>
+    </div>
+
+    <!-- Error State -->
+    <div id="error-msg" class="hidden card mb-4" style="border-color: #ef4444; border-left: 4px solid #ef4444; padding: 1rem;">
+      <p class="text-sm font-medium" style="color: #ef4444;" id="error-text">Something went wrong</p>
+    </div>
+
+    <!-- Results -->
+    <div id="results" class="hidden">
+
+      <!-- Overall Score & Grade -->
+      <div class="result-section">
+        <div class="card" style="text-align: center; padding: 2rem;">
+          <div class="flex items-center justify-center gap-6 flex-wrap">
+            <!-- Circular Score -->
+            <div style="position: relative; width: 120px; height: 120px;">
+              <svg viewBox="0 0 120 120" style="width: 120px; height: 120px; transform: rotate(-90deg);">
+                <circle cx="60" cy="60" r="52" fill="none" stroke-width="8" style="stroke: var(--border);"></circle>
+                <circle id="score-ring" cx="60" cy="60" r="52" fill="none" stroke-width="8" stroke-linecap="round" style="stroke: #6366f1; transition: stroke-dashoffset 1s ease;" stroke-dasharray="327" stroke-dashoffset="327"></circle>
+              </svg>
+              <div style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                <span id="score-value" class="text-3xl font-bold" style="color: var(--text); line-height: 1;">0</span>
+                <span class="text-xs" style="color: var(--text-muted);">out of 10</span>
+              </div>
+            </div>
+            <!-- Grade Badge -->
+            <div>
+              <span id="grade-badge" class="inline-block px-5 py-2 rounded-xl text-2xl font-bold" style="background: rgba(99,102,241,0.1); color: #6366f1;">—</span>
+              <p id="word-count-text" class="text-xs mt-2" style="color: var(--text-muted);">Word count: —</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Strengths -->
+      <div class="result-section">
+        <h3>
+          <svg class="w-5 h-5" style="color: #10b981;" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          Strengths
+        </h3>
+        <div id="strengths-list" class="grid gap-2"></div>
+      </div>
+
+      <!-- Areas to Improve -->
+      <div class="result-section">
+        <h3>
+          <svg class="w-5 h-5" style="color: #f59e0b;" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+          Areas to Improve
+        </h3>
+        <div id="improvements-list" class="grid gap-2"></div>
+      </div>
+
+      <!-- Category Scores -->
+      <div class="result-section">
+        <h3>
+          <svg class="w-5 h-5" style="color: #6366f1;" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+          Category Scores
+        </h3>
+        <div class="card">
+          <div id="category-scores" class="space-y-4"></div>
+        </div>
+      </div>
+
+      <!-- Grammar Errors -->
+      <div id="grammar-errors-section" class="result-section hidden">
+        <h3>
+          <svg class="w-5 h-5" style="color: #ef4444;" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          Grammar Errors
+        </h3>
+        <div class="card">
+          <ul id="grammar-errors-list" class="space-y-2"></ul>
+        </div>
+      </div>
+
+      <!-- Revised Opening -->
+      <div class="result-section">
+        <h3>
+          <span style="color: #6366f1; font-size: 1.125rem;">✨</span>
+          Suggested Opening Paragraph
+        </h3>
+        <div class="card" style="border-left: 4px solid #6366f1;">
+          <p id="revised-opening" class="text-sm leading-relaxed" style="color: var(--text); font-style: italic;"></p>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex flex-wrap gap-2 mb-6">
+        <button id="copy-btn" class="btn btn-outline btn-sm">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+          Copy Feedback
+        </button>
+        <button id="reset-btn" class="btn btn-outline btn-sm">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+          Grade Another Essay
+        </button>
+      </div>
+    </div>
+
+    <!-- SEO Content -->
+    <div class="mt-12 space-y-6" style="color: var(--text-muted);">
+      <h2 class="text-xl font-bold" style="color: var(--text);">AI Essay Grading &amp; Writing Feedback</h2>
+      <p class="text-sm leading-relaxed">Get instant, detailed feedback on your essays with our AI-powered essay grader. Using Google's Gemini model, this tool analyzes your writing across multiple dimensions and provides actionable suggestions to improve your work. Perfect for students, test-takers, and anyone looking to sharpen their writing skills.</p>
+      <ul class="text-sm space-y-2">
+        <li><strong style="color: var(--text);">Overall Score &amp; Grade</strong> - Get a numerical score out of 10 and a letter grade</li>
+        <li><strong style="color: var(--text);">Strengths Analysis</strong> - Know what you're doing well so you can build on it</li>
+        <li><strong style="color: var(--text);">Improvement Areas</strong> - Specific, actionable feedback on what to fix</li>
+        <li><strong style="color: var(--text);">Category Breakdown</strong> - Individual scores for structure, grammar, vocabulary, and coherence</li>
+        <li><strong style="color: var(--text);">Grammar Error Detection</strong> - Spot mistakes you might have missed</li>
+        <li><strong style="color: var(--text);">Revised Opening</strong> - See how your introduction could be stronger</li>
+      </ul>
+      <p class="text-sm leading-relaxed">Supports argumentative, descriptive, narrative, expository, and persuasive essay types. Great for preparing for TOEFL, IELTS, GRE AWA, SAT essay, school assignments, and university papers.</p>
+    </div>
+  </div>
+
+</Layout>
+
+<script>
+  import { callAI, parseJSON, canUseFreeTier, incrementUsage, getRemainingUses } from '../../utils/ai';
+
+  function init() {
+    const input = document.getElementById('essay-input') as HTMLTextAreaElement;
+    const essayType = document.getElementById('essay-type') as HTMLSelectElement;
+    const charCount = document.getElementById('char-count')!;
+    const gradeBtn = document.getElementById('grade-btn')!;
+    const clearBtn = document.getElementById('clear-btn')!;
+    const loading = document.getElementById('loading')!;
+    const errorMsg = document.getElementById('error-msg')!;
+    const errorText = document.getElementById('error-text')!;
+    const results = document.getElementById('results')!;
+    const copyBtn = document.getElementById('copy-btn')!;
+    const resetBtn = document.getElementById('reset-btn')!;
+
+    // Restore text from sessionStorage
+    const saved = sessionStorage.getItem('sg_current_text');
+    if (saved) input.value = saved;
+
+    // Char count
+    input.addEventListener('input', () => {
+      const len = input.value.length;
+      charCount.textContent = `${len.toLocaleString()} characters`;
+      if (len > 0 && len < 100) {
+        charCount.style.color = '#f59e0b';
+      } else if (len >= 100) {
+        charCount.style.color = '#10b981';
+      } else {
+        charCount.style.color = 'var(--text-muted)';
+      }
+    });
+    input.dispatchEvent(new Event('input'));
+
+    // Clear
+    clearBtn.addEventListener('click', () => {
+      input.value = '';
+      results.classList.add('hidden');
+      errorMsg.classList.add('hidden');
+      input.dispatchEvent(new Event('input'));
+      input.focus();
+    });
+
+    // Reset
+    resetBtn.addEventListener('click', () => {
+      input.value = '';
+      results.classList.add('hidden');
+      errorMsg.classList.add('hidden');
+      input.dispatchEvent(new Event('input'));
+      input.focus();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+
+    // Copy Feedback
+    copyBtn.addEventListener('click', () => {
+      const score = document.getElementById('score-value')?.textContent || '';
+      const grade = document.getElementById('grade-badge')?.textContent || '';
+      const strengths = Array.from(document.querySelectorAll('#strengths-list .card')).map(c => c.textContent?.trim()).join('\n- ');
+      const improvements = Array.from(document.querySelectorAll('#improvements-list .card')).map(c => c.textContent?.trim()).join('\n- ');
+      const revised = document.getElementById('revised-opening')?.textContent || '';
+      const full = `Essay Grade: ${score}/10 (${grade})\n\nStrengths:\n- ${strengths}\n\nAreas to Improve:\n- ${improvements}\n\nSuggested Opening:\n${revised}`;
+      navigator.clipboard.writeText(full).then(() => {
+        copyBtn.textContent = 'Copied!';
+        setTimeout(() => {
+          copyBtn.innerHTML = '<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg> Copy Feedback';
+        }, 2000);
+      });
+    });
+
+    // Grade
+    gradeBtn.addEventListener('click', async () => {
+      const essay = input.value.trim();
+      if (!essay) {
+        errorText.textContent = 'Please paste your essay first.';
+        errorMsg.classList.remove('hidden');
+        return;
+      }
+      if (essay.length < 100) {
+        errorText.textContent = 'Please enter at least 100 characters for a meaningful evaluation.';
+        errorMsg.classList.remove('hidden');
+        return;
+      }
+      if (!canUseFreeTier()) {
+        errorText.textContent = 'You\'ve used all 5 free generations today. Come back tomorrow or upgrade to Pro!';
+        errorMsg.classList.remove('hidden');
+        return;
+      }
+
+      // Save text for other tools
+      sessionStorage.setItem('sg_current_text', essay);
+
+      const type = essayType.value;
+
+      // Show loading
+      errorMsg.classList.add('hidden');
+      results.classList.add('hidden');
+      loading.classList.remove('hidden');
+      gradeBtn.disabled = true;
+      gradeBtn.innerHTML = '<span class="spinner"></span> Grading...';
+
+      const prompt = `You are an expert English teacher and essay grader. Grade the following ${type} essay and provide detailed feedback.
+
+Provide your response in this EXACT JSON format:
+{
+  "overallScore": 7.5,
+  "maxScore": 10,
+  "grade": "B+",
+  "strengths": ["strength 1", "strength 2"],
+  "improvements": ["area to improve 1", "area to improve 2", "area to improve 3"],
+  "structure": {"score": 8, "feedback": "feedback on essay structure and organization"},
+  "grammar": {"score": 7, "feedback": "feedback on grammar and mechanics", "errors": ["specific error 1", "specific error 2"]},
+  "vocabulary": {"score": 7, "feedback": "feedback on word choice and vocabulary range"},
+  "coherence": {"score": 8, "feedback": "feedback on flow, transitions, and logical coherence"},
+  "revisedOpening": "A better version of the opening paragraph that demonstrates improvements",
+  "wordCount": 250
+}
+
+Be constructive, specific, and encouraging. Score each category from 1-10.
+
+ESSAY TYPE: ${type}
+ESSAY:
+${essay.slice(0, 8000)}`;
+
+      const response = await callAI(prompt);
+
+      loading.classList.add('hidden');
+      gradeBtn.disabled = false;
+      gradeBtn.innerHTML = '<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/></svg> Grade My Essay';
+
+      if (response.error) {
+        errorText.textContent = response.error;
+        errorMsg.classList.remove('hidden');
+        return;
+      }
+
+      const data = parseJSON(response.text);
+      if (!data) {
+        errorText.textContent = 'Failed to parse AI response. Please try again.';
+        errorMsg.classList.remove('hidden');
+        return;
+      }
+
+      // Track usage
+      incrementUsage();
+      const remaining = getRemainingUses();
+      const usageTextEl = document.getElementById('usage-text');
+      const usageFill = document.getElementById('usage-fill');
+      if (usageTextEl) usageTextEl.textContent = `${remaining}/5 free`;
+      if (usageFill) usageFill.style.width = `${(remaining / 5) * 100}%`;
+
+      // --- Render Results ---
+
+      // Overall score ring animation
+      const score = data.overallScore || 0;
+      const maxScore = data.maxScore || 10;
+      const circumference = 327; // 2 * PI * 52
+      const offset = circumference - (score / maxScore) * circumference;
+      const scoreRing = document.getElementById('score-ring')!;
+
+      // Pick color based on score
+      let scoreColor = '#ef4444'; // red
+      if (score >= 8) scoreColor = '#10b981'; // green
+      else if (score >= 6) scoreColor = '#6366f1'; // brand purple
+      else if (score >= 4) scoreColor = '#f59e0b'; // amber
+
+      scoreRing.style.stroke = scoreColor;
+      // Trigger animation on next frame
+      requestAnimationFrame(() => {
+        scoreRing.style.strokeDashoffset = String(offset);
+      });
+
+      document.getElementById('score-value')!.textContent = String(score);
+      document.getElementById('grade-badge')!.textContent = data.grade || '—';
+      document.getElementById('grade-badge')!.style.color = scoreColor;
+      document.getElementById('grade-badge')!.style.background = scoreColor + '18';
+      document.getElementById('word-count-text')!.textContent = `Word count: ${data.wordCount || '—'}`;
+
+      // Strengths (green cards)
+      const strengthsList = document.getElementById('strengths-list')!;
+      strengthsList.innerHTML = (data.strengths || []).map((s: string) =>
+        `<div class="card" style="border-left: 4px solid #10b981; padding: 0.75rem 1rem;">
+          <p class="text-sm" style="color: var(--text);">
+            <span style="color: #10b981; margin-right: 0.5rem;">✓</span>${s}
+          </p>
+        </div>`
+      ).join('');
+
+      // Improvements (amber cards)
+      const improvementsList = document.getElementById('improvements-list')!;
+      improvementsList.innerHTML = (data.improvements || []).map((s: string) =>
+        `<div class="card" style="border-left: 4px solid #f59e0b; padding: 0.75rem 1rem;">
+          <p class="text-sm" style="color: var(--text);">
+            <span style="color: #f59e0b; margin-right: 0.5rem;">→</span>${s}
+          </p>
+        </div>`
+      ).join('');
+
+      // Category scores with progress bars
+      const categories = [
+        { key: 'structure', label: 'Structure', icon: '🏗️' },
+        { key: 'grammar', label: 'Grammar', icon: '📝' },
+        { key: 'vocabulary', label: 'Vocabulary', icon: '📖' },
+        { key: 'coherence', label: 'Coherence', icon: '🔗' },
+      ];
+
+      const categoryScores = document.getElementById('category-scores')!;
+      categoryScores.innerHTML = categories.map(cat => {
+        const catData = data[cat.key] || { score: 0, feedback: 'No feedback available.' };
+        const catScore = catData.score || 0;
+        const pct = (catScore / 10) * 100;
+        let barColor = '#ef4444';
+        if (catScore >= 8) barColor = '#10b981';
+        else if (catScore >= 6) barColor = '#6366f1';
+        else if (catScore >= 4) barColor = '#f59e0b';
+
+        return `<div>
+          <div class="flex items-center justify-between mb-1">
+            <span class="text-sm font-medium" style="color: var(--text);">${cat.icon} ${cat.label}</span>
+            <span class="text-sm font-bold" style="color: ${barColor};">${catScore}/10</span>
+          </div>
+          <div style="width: 100%; height: 6px; background: var(--border); border-radius: 9999px; overflow: hidden;">
+            <div style="width: ${pct}%; height: 100%; background: ${barColor}; border-radius: 9999px; transition: width 0.8s ease;"></div>
+          </div>
+          <p class="text-xs mt-1" style="color: var(--text-muted);">${catData.feedback}</p>
+        </div>`;
+      }).join('');
+
+      // Grammar errors
+      const grammarErrors = data.grammar?.errors || [];
+      const grammarSection = document.getElementById('grammar-errors-section')!;
+      if (grammarErrors.length > 0) {
+        grammarSection.classList.remove('hidden');
+        const grammarList = document.getElementById('grammar-errors-list')!;
+        grammarList.innerHTML = grammarErrors.map((err: string) =>
+          `<li class="flex items-start gap-2 text-sm" style="color: var(--text); padding: 0.5rem 0; border-bottom: 1px solid var(--border);">
+            <span style="color: #ef4444; flex-shrink: 0;">✕</span>
+            <span>${err}</span>
+          </li>`
+        ).join('');
+      } else {
+        grammarSection.classList.add('hidden');
+      }
+
+      // Revised opening
+      document.getElementById('revised-opening')!.textContent = data.revisedOpening || 'No revised opening available.';
+
+      results.classList.remove('hidden');
+      results.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', init);
+  document.addEventListener('astro:page-load', init);
+</script>

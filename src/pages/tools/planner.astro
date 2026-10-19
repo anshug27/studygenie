@@ -1,0 +1,492 @@
+---
+import Layout from '../../layouts/Layout.astro';
+---
+<Layout title="AI Study Planner - StudyGenie" description="Create a personalized AI-powered study schedule for any exam or goal. Get weekly plans, daily routines, and revision strategies for JEE, NEET, UPSC, and board exams." isTool={true}>
+
+  <div class="tool-container">
+    <div class="tool-header">
+      <h1>&#x1F4C5; AI Study Planner</h1>
+      <p>Create a personalized study schedule for any exam or goal</p>
+    </div>
+
+    <!-- Input Area -->
+    <div class="tool-input-area">
+
+      <!-- Quick Presets -->
+      <div class="mb-4">
+        <label class="text-xs font-semibold mb-2 block" style="color: var(--text-muted);">Quick Presets</label>
+        <div class="flex flex-wrap gap-2">
+          <button class="preset-chip btn btn-outline btn-sm" data-subject="JEE Mains - Physics" data-topics="Mechanics, Thermodynamics, Waves & Oscillations, Optics, Electrostatics, Current Electricity, Magnetism, Modern Physics, Electromagnetic Induction, Semiconductors">JEE Mains - Physics</button>
+          <button class="preset-chip btn btn-outline btn-sm" data-subject="NEET - Biology" data-topics="Cell Biology, Genetics, Ecology, Human Physiology, Plant Physiology, Evolution, Biotechnology, Reproduction, Animal Kingdom, Plant Kingdom">NEET - Biology</button>
+          <button class="preset-chip btn btn-outline btn-sm" data-subject="Board Exam - Math" data-topics="Relations & Functions, Algebra, Calculus, Vectors, 3D Geometry, Linear Programming, Probability, Matrices & Determinants, Integrals, Differential Equations">Board Exam - Math</button>
+          <button class="preset-chip btn btn-outline btn-sm" data-subject="UPSC - History" data-topics="Ancient India, Medieval India, Modern India, Indian National Movement, World History, Art & Culture, Post-Independence India, Indian Constitution, Social Reforms, Economic History">UPSC - History</button>
+        </div>
+      </div>
+
+      <!-- Subject/Exam Name -->
+      <div class="mb-3">
+        <label for="subject-input" class="text-xs font-semibold mb-1 block" style="color: var(--text-muted);">Subject / Exam Name</label>
+        <input id="subject-input" type="text" class="input" placeholder='e.g. "JEE Physics", "NEET Biology", "Board Exams"' />
+      </div>
+
+      <!-- Topics to Cover -->
+      <div class="mb-3">
+        <label for="topics-input" class="text-xs font-semibold mb-1 block" style="color: var(--text-muted);">Topics to Cover (comma or newline separated)</label>
+        <textarea id="topics-input" class="input" placeholder="e.g. Mechanics, Thermodynamics, Optics, Electrostatics..." style="min-height: 100px;"></textarea>
+      </div>
+
+      <!-- Available Days & Hours Per Day -->
+      <div class="flex flex-wrap gap-3 mb-3">
+        <div class="flex-1" style="min-width: 140px;">
+          <label for="days-input" class="text-xs font-semibold mb-1 block" style="color: var(--text-muted);">Available Days</label>
+          <input id="days-input" type="number" class="input" min="1" max="90" value="30" />
+        </div>
+        <div class="flex-1" style="min-width: 140px;">
+          <label for="hours-select" class="text-xs font-semibold mb-1 block" style="color: var(--text-muted);">Hours Per Day</label>
+          <select id="hours-select" class="input">
+            <option value="1">1 hour</option>
+            <option value="2">2 hours</option>
+            <option value="3" selected>3 hours</option>
+            <option value="4">4 hours</option>
+            <option value="5">5 hours</option>
+            <option value="6">6 hours</option>
+            <option value="8">8 hours</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Difficulty Level Chips -->
+      <div class="mb-4">
+        <label class="text-xs font-semibold mb-2 block" style="color: var(--text-muted);">Difficulty Level</label>
+        <div class="flex flex-wrap gap-2">
+          <button class="difficulty-chip btn btn-outline btn-sm" data-level="Beginner">Beginner</button>
+          <button class="difficulty-chip btn btn-outline btn-sm active" data-level="Intermediate" style="background: rgba(99,102,241,0.1); color: #6366f1; border-color: #6366f1;">Intermediate</button>
+          <button class="difficulty-chip btn btn-outline btn-sm" data-level="Advanced">Advanced</button>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-end mt-3">
+        <button id="generate-btn" class="btn btn-brand">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+          Generate Plan
+        </button>
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    <div id="loading" class="hidden text-center py-12">
+      <div class="spinner spinner-dark mx-auto mb-3" style="width: 2rem; height: 2rem;"></div>
+      <p class="text-sm" style="color: var(--text-muted);">Creating your personalized study plan...</p>
+    </div>
+
+    <!-- Error State -->
+    <div id="error-msg" class="hidden card mb-4" style="border-color: #ef4444; border-left: 4px solid #ef4444; padding: 1rem;">
+      <p class="text-sm font-medium" style="color: #ef4444;" id="error-text">Something went wrong</p>
+    </div>
+
+    <!-- Results -->
+    <div id="results" class="hidden">
+
+      <!-- Overview Card -->
+      <div class="result-section">
+        <h3>
+          <svg class="w-5 h-5" style="color: #6366f1;" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+          Plan Overview
+        </h3>
+        <div class="card" style="padding: 1.25rem;">
+          <div class="flex flex-wrap gap-4">
+            <div class="flex-1 text-center" style="min-width: 100px;">
+              <p class="text-2xl font-bold" style="color: #6366f1;" id="overview-exam">-</p>
+              <p class="text-xs" style="color: var(--text-muted);">Exam / Subject</p>
+            </div>
+            <div class="flex-1 text-center" style="min-width: 100px;">
+              <p class="text-2xl font-bold" style="color: #10b981;" id="overview-days">-</p>
+              <p class="text-xs" style="color: var(--text-muted);">Total Days</p>
+            </div>
+            <div class="flex-1 text-center" style="min-width: 100px;">
+              <p class="text-2xl font-bold" style="color: #f59e0b;" id="overview-hours">-</p>
+              <p class="text-xs" style="color: var(--text-muted);">Hours / Day</p>
+            </div>
+            <div class="flex-1 text-center" style="min-width: 100px;">
+              <p class="text-2xl font-bold" style="color: #ec4899;" id="overview-total">-</p>
+              <p class="text-xs" style="color: var(--text-muted);">Total Hours</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Weekly Schedule -->
+      <div class="result-section">
+        <h3>
+          <svg class="w-5 h-5" style="color: #10b981;" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+          Weekly Schedule
+        </h3>
+        <div id="schedule-cards" class="space-y-3"></div>
+      </div>
+
+      <!-- Daily Routine -->
+      <div class="result-section">
+        <h3>
+          <span style="color: #f59e0b; font-size: 1.125rem;">&#x23F0;</span>
+          Suggested Daily Routine
+        </h3>
+        <div class="card" style="padding: 1.25rem;">
+          <div class="space-y-3" id="routine-content"></div>
+        </div>
+      </div>
+
+      <!-- Revision Days -->
+      <div class="result-section">
+        <h3>
+          <span style="color: #ec4899; font-size: 1.125rem;">&#x1F504;</span>
+          Revision Days
+        </h3>
+        <div class="card" style="padding: 1.25rem;">
+          <div id="revision-days" class="flex flex-wrap gap-2"></div>
+        </div>
+      </div>
+
+      <!-- General Tips -->
+      <div class="result-section">
+        <h3>
+          <svg class="w-5 h-5" style="color: #6366f1;" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+          General Tips
+        </h3>
+        <div class="card" style="padding: 1.25rem;">
+          <ul id="tips-list" class="space-y-2"></ul>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex flex-wrap gap-2 mb-6">
+        <button id="download-btn" class="btn btn-outline btn-sm">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          Download as Text
+        </button>
+        <button id="copy-btn" class="btn btn-outline btn-sm">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+          Copy Plan
+        </button>
+        <button id="reset-btn" class="btn btn-outline btn-sm">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+          Create New Plan
+        </button>
+      </div>
+    </div>
+
+    <!-- SEO Content -->
+    <div class="mt-12 space-y-6" style="color: var(--text-muted);">
+      <h2 class="text-xl font-bold" style="color: var(--text);">AI-Powered Study Planning for Every Exam</h2>
+      <p class="text-sm leading-relaxed">Creating a study plan is one of the most effective ways to prepare for any exam. Our AI Study Planner uses Google's Gemini model to generate personalized, week-by-week study schedules tailored to your subject, available time, and difficulty level. Whether you're preparing for competitive exams or board exams, a structured plan keeps you on track.</p>
+      <ul class="text-sm space-y-2">
+        <li><strong style="color: var(--text);">Personalized Schedules</strong> - AI creates a plan based on your specific topics, available days, and hours per day</li>
+        <li><strong style="color: var(--text);">Weekly Breakdowns</strong> - See exactly what to study each week with focus areas and tips</li>
+        <li><strong style="color: var(--text);">Built-in Revision</strong> - Dedicated revision days are scheduled to reinforce your learning</li>
+        <li><strong style="color: var(--text);">Daily Routine Suggestions</strong> - Get a suggested morning, afternoon, and evening study routine</li>
+        <li><strong style="color: var(--text);">Quick Presets</strong> - Start instantly with pre-configured plans for JEE, NEET, UPSC, and board exams</li>
+      </ul>
+      <h3 class="text-lg font-bold" style="color: var(--text);">Why Study Planning Matters</h3>
+      <p class="text-sm leading-relaxed">Research shows that students who follow a structured study plan score significantly higher than those who study randomly. Spaced repetition, topic rotation, and dedicated revision days help transfer knowledge from short-term to long-term memory. Our AI planner incorporates these proven strategies automatically, so you can focus on learning instead of planning.</p>
+    </div>
+  </div>
+
+</Layout>
+
+<script>
+  import { callAI, parseJSON, canUseFreeTier, incrementUsage, getRemainingUses } from '../../utils/ai';
+
+  function init() {
+    const subjectInput = document.getElementById('subject-input') as HTMLInputElement;
+    const topicsInput = document.getElementById('topics-input') as HTMLTextAreaElement;
+    const daysInput = document.getElementById('days-input') as HTMLInputElement;
+    const hoursSelect = document.getElementById('hours-select') as HTMLSelectElement;
+    const generateBtn = document.getElementById('generate-btn')!;
+    const loading = document.getElementById('loading')!;
+    const errorMsg = document.getElementById('error-msg')!;
+    const errorText = document.getElementById('error-text')!;
+    const results = document.getElementById('results')!;
+    const copyBtn = document.getElementById('copy-btn')!;
+    const downloadBtn = document.getElementById('download-btn')!;
+    const resetBtn = document.getElementById('reset-btn')!;
+
+    let selectedDifficulty = 'Intermediate';
+    let planData: any = null;
+
+    // Preset chip clicks
+    document.querySelectorAll('.preset-chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        const el = chip as HTMLElement;
+        subjectInput.value = el.dataset.subject || '';
+        topicsInput.value = (el.dataset.topics || '').split(', ').join('\n');
+        subjectInput.focus();
+      });
+    });
+
+    // Difficulty chip clicks
+    document.querySelectorAll('.difficulty-chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        document.querySelectorAll('.difficulty-chip').forEach(c => {
+          (c as HTMLElement).style.background = '';
+          (c as HTMLElement).style.color = '';
+          (c as HTMLElement).style.borderColor = '';
+          c.classList.remove('active');
+        });
+        (chip as HTMLElement).style.background = 'rgba(99,102,241,0.1)';
+        (chip as HTMLElement).style.color = '#6366f1';
+        (chip as HTMLElement).style.borderColor = '#6366f1';
+        chip.classList.add('active');
+        selectedDifficulty = (chip as HTMLElement).dataset.level || 'Intermediate';
+      });
+    });
+
+    // Reset button
+    resetBtn.addEventListener('click', () => {
+      subjectInput.value = '';
+      topicsInput.value = '';
+      daysInput.value = '30';
+      hoursSelect.value = '3';
+      results.classList.add('hidden');
+      errorMsg.classList.add('hidden');
+      planData = null;
+      subjectInput.focus();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+
+    // Build plan text for copy/download
+    function buildPlanText(): string {
+      if (!planData) return '';
+      let text = `STUDY PLAN: ${planData.examName || 'Study Plan'}\n`;
+      text += `Duration: ${planData.totalDays} days | Hours/day: ${planData.hoursPerDay}\n`;
+      text += `${'='.repeat(50)}\n\n`;
+
+      if (planData.schedule && Array.isArray(planData.schedule)) {
+        text += `WEEKLY SCHEDULE\n${'-'.repeat(30)}\n`;
+        planData.schedule.forEach((week: any) => {
+          text += `\nWeek ${week.week} (${week.days}) - Focus: ${week.focus}\n`;
+          text += `Hours: ${week.hours}h/day\n`;
+          text += `Topics: ${(week.topics || []).join(', ')}\n`;
+          if (week.tip) text += `Tip: ${week.tip}\n`;
+        });
+        text += '\n';
+      }
+
+      if (planData.dailyRoutine) {
+        text += `DAILY ROUTINE\n${'-'.repeat(30)}\n`;
+        text += `Morning: ${planData.dailyRoutine.morning || '-'}\n`;
+        text += `Afternoon: ${planData.dailyRoutine.afternoon || '-'}\n`;
+        text += `Evening: ${planData.dailyRoutine.evening || '-'}\n\n`;
+      }
+
+      if (planData.revisionDays && Array.isArray(planData.revisionDays)) {
+        text += `REVISION DAYS\n${'-'.repeat(30)}\n`;
+        text += planData.revisionDays.join(', ') + '\n\n';
+      }
+
+      if (planData.tips && Array.isArray(planData.tips)) {
+        text += `GENERAL TIPS\n${'-'.repeat(30)}\n`;
+        planData.tips.forEach((tip: string, i: number) => {
+          text += `${i + 1}. ${tip}\n`;
+        });
+      }
+
+      return text;
+    }
+
+    // Copy plan
+    copyBtn.addEventListener('click', () => {
+      const text = buildPlanText();
+      navigator.clipboard.writeText(text).then(() => {
+        copyBtn.textContent = 'Copied!';
+        setTimeout(() => {
+          copyBtn.innerHTML = '<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg> Copy Plan';
+        }, 2000);
+      });
+    });
+
+    // Download as text
+    downloadBtn.addEventListener('click', () => {
+      const text = buildPlanText();
+      const blob = new Blob([text], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `study-plan-${(planData?.examName || 'plan').replace(/[^a-zA-Z0-9]/g, '-').toLowerCase()}.txt`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    });
+
+    // Generate plan
+    generateBtn.addEventListener('click', async () => {
+      const subject = subjectInput.value.trim();
+      const topicsRaw = topicsInput.value.trim();
+      const days = parseInt(daysInput.value) || 30;
+      const hours = parseInt(hoursSelect.value) || 3;
+
+      if (!subject) {
+        errorText.textContent = 'Please enter a subject or exam name.';
+        errorMsg.classList.remove('hidden');
+        return;
+      }
+      if (!topicsRaw) {
+        errorText.textContent = 'Please enter at least a few topics to cover.';
+        errorMsg.classList.remove('hidden');
+        return;
+      }
+      if (!canUseFreeTier()) {
+        errorText.textContent = "You've used all 5 free generations today. Come back tomorrow or upgrade to Pro!";
+        errorMsg.classList.remove('hidden');
+        return;
+      }
+
+      const topics = topicsRaw.split(/[,\n]+/).map(t => t.trim()).filter(Boolean);
+
+      const prompt = `You are an expert study planner and education coach. Create a detailed, personalized study plan.
+
+Subject/Exam: ${subject}
+Topics to cover: ${topics.join(', ')}
+Available days: ${days}
+Hours per day: ${hours}
+Difficulty level: ${selectedDifficulty}
+
+Provide your response in this EXACT JSON format:
+{
+  "examName": "${subject}",
+  "totalDays": ${days},
+  "hoursPerDay": ${hours},
+  "schedule": [
+    {"week": 1, "days": "Day 1-7", "topics": ["topic1", "topic2"], "focus": "Foundations", "hours": ${hours}, "tip": "Start with basics and build a strong foundation."}
+  ],
+  "revisionDays": ["Day X", "Day Y"],
+  "dailyRoutine": {"morning": "...", "afternoon": "...", "evening": "..."},
+  "tips": ["tip1", "tip2", "tip3"]
+}
+
+Rules:
+- Divide the ${days} days into logical weekly blocks
+- Distribute all ${topics.length} topics across the weeks
+- Include revision days near the end (at least 2-3 days)
+- Daily routine should match ${hours} hours of study
+- Tips should be practical and specific to ${subject}
+- Each week should have a clear focus area
+- For ${selectedDifficulty} level, adjust depth and pace accordingly
+- Include at least 3 general tips`;
+
+      // Show loading
+      errorMsg.classList.add('hidden');
+      results.classList.add('hidden');
+      loading.classList.remove('hidden');
+      generateBtn.disabled = true;
+      generateBtn.innerHTML = '<span class="spinner"></span> Generating...';
+
+      const response = await callAI(prompt);
+
+      loading.classList.add('hidden');
+      generateBtn.disabled = false;
+      generateBtn.innerHTML = '<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg> Generate Plan';
+
+      if (response.error) {
+        errorText.textContent = response.error;
+        errorMsg.classList.remove('hidden');
+        return;
+      }
+
+      const data = parseJSON(response.text);
+      if (!data || !data.schedule || !Array.isArray(data.schedule)) {
+        errorText.textContent = 'Failed to parse AI response. Please try again.';
+        errorMsg.classList.remove('hidden');
+        return;
+      }
+
+      // Track usage
+      incrementUsage();
+      const remaining = getRemainingUses();
+      const usageText = document.getElementById('usage-text');
+      const usageFill = document.getElementById('usage-fill');
+      if (usageText) usageText.textContent = `${remaining}/5 free`;
+      if (usageFill) usageFill.style.width = `${(remaining / 5) * 100}%`;
+
+      planData = data;
+
+      // Render overview
+      document.getElementById('overview-exam')!.textContent = data.examName || subject;
+      document.getElementById('overview-days')!.textContent = String(data.totalDays || days);
+      document.getElementById('overview-hours')!.textContent = String(data.hoursPerDay || hours);
+      document.getElementById('overview-total')!.textContent = String((data.totalDays || days) * (data.hoursPerDay || hours));
+
+      // Render weekly schedule cards
+      const scheduleCards = document.getElementById('schedule-cards')!;
+      const weekColors = ['#6366f1', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6', '#14b8a6', '#f97316', '#06b6d4'];
+      scheduleCards.innerHTML = data.schedule.map((week: any, i: number) => {
+        const color = weekColors[i % weekColors.length];
+        return `<div class="card" style="padding: 1.25rem; border-left: 4px solid ${color};">
+          <div class="flex items-start justify-between mb-2 flex-wrap gap-2">
+            <div>
+              <span class="text-sm font-bold" style="color: ${color};">Week ${week.week}</span>
+              <span class="text-xs ml-2" style="color: var(--text-muted);">${escapeHtml(week.days)}</span>
+            </div>
+            <span class="text-xs font-semibold px-2 py-1 rounded-full" style="background: rgba(99,102,241,0.1); color: #6366f1;">${week.hours}h/day &middot; ${escapeHtml(week.focus)}</span>
+          </div>
+          <div class="flex flex-wrap gap-1 mb-2">
+            ${(week.topics || []).map((t: string) => `<span class="text-xs px-2 py-0.5 rounded-full" style="background: var(--bg-alt); color: var(--text);">${escapeHtml(t)}</span>`).join('')}
+          </div>
+          ${week.tip ? `<p class="text-xs" style="color: var(--text-muted);"><strong>Tip:</strong> ${escapeHtml(week.tip)}</p>` : ''}
+        </div>`;
+      }).join('');
+
+      // Render daily routine
+      const routineContent = document.getElementById('routine-content')!;
+      const routine = data.dailyRoutine || {};
+      const routineItems = [
+        { icon: '&#x1F305;', label: 'Morning', value: routine.morning },
+        { icon: '&#x2600;&#xFE0F;', label: 'Afternoon', value: routine.afternoon },
+        { icon: '&#x1F319;', label: 'Evening', value: routine.evening }
+      ];
+      routineContent.innerHTML = routineItems.map(item =>
+        `<div class="flex items-start gap-3">
+          <span class="text-base flex-shrink-0">${item.icon}</span>
+          <div>
+            <p class="text-sm font-semibold" style="color: var(--text);">${item.label}</p>
+            <p class="text-sm" style="color: var(--text-muted);">${escapeHtml(item.value || 'Not specified')}</p>
+          </div>
+        </div>`
+      ).join('');
+
+      // Render revision days
+      const revisionDays = document.getElementById('revision-days')!;
+      if (data.revisionDays && Array.isArray(data.revisionDays) && data.revisionDays.length > 0) {
+        revisionDays.innerHTML = data.revisionDays.map((day: string) =>
+          `<span class="text-xs font-semibold px-3 py-1.5 rounded-full" style="background: rgba(236,72,153,0.1); color: #ec4899;">${escapeHtml(day)}</span>`
+        ).join('');
+      } else {
+        revisionDays.innerHTML = '<p class="text-sm" style="color: var(--text-muted);">No specific revision days scheduled.</p>';
+      }
+
+      // Render tips
+      const tipsList = document.getElementById('tips-list')!;
+      if (data.tips && Array.isArray(data.tips) && data.tips.length > 0) {
+        tipsList.innerHTML = data.tips.map((tip: string, i: number) =>
+          `<li class="flex items-start gap-3 text-sm" style="color: var(--text);">
+            <span class="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold" style="background: rgba(99,102,241,0.1); color: #6366f1;">${i + 1}</span>
+            <span class="pt-0.5" style="color: var(--text-muted);">${escapeHtml(tip)}</span>
+          </li>`
+        ).join('');
+      } else {
+        tipsList.innerHTML = '<li class="text-sm" style="color: var(--text-muted);">No tips available.</li>';
+      }
+
+      results.classList.remove('hidden');
+      results.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  }
+
+  function escapeHtml(str: string): string {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  document.addEventListener('DOMContentLoaded', init);
+  document.addEventListener('astro:page-load', init);
+</script>

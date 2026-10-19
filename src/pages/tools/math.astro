@@ -1,0 +1,314 @@
+---
+import Layout from '../../layouts/Layout.astro';
+---
+<Layout title="AI Math Solver - StudyGenie" description="Solve any math problem with step-by-step explanations. Algebra, calculus, geometry, statistics and more. Powered by AI." isTool={true}>
+
+  <div class="tool-container">
+    <div class="tool-header">
+      <h1>🔢 AI Math Solver</h1>
+      <p>Solve any math problem with step-by-step explanations</p>
+    </div>
+
+    <!-- Input Area -->
+    <div class="tool-input-area">
+      <textarea id="math-input" class="input" placeholder="Type or paste your math problem here... (e.g. Solve 2x + 5 = 15, Find the derivative of x^3, Calculate the area of a circle with radius 7)" style="min-height: 140px;"></textarea>
+
+      <!-- Quick Example Chips -->
+      <div class="flex flex-wrap gap-2 mt-3">
+        <button class="example-chip btn btn-outline btn-sm">Solve: 2x + 5 = 15</button>
+        <button class="example-chip btn btn-outline btn-sm">Derivative of x^3 + 2x</button>
+        <button class="example-chip btn btn-outline btn-sm">Integral of sin(x)</button>
+        <button class="example-chip btn btn-outline btn-sm">Find area of triangle with sides 3,4,5</button>
+        <button class="example-chip btn btn-outline btn-sm">Simplify: (x^2-4)/(x+2)</button>
+        <button class="example-chip btn btn-outline btn-sm">Probability of rolling 7 with two dice</button>
+      </div>
+
+      <div class="flex items-center justify-between mt-3">
+        <span id="char-count" class="text-xs" style="color: var(--text-muted);">0 / 2,000 characters</span>
+        <div class="flex gap-2">
+          <button id="clear-btn" class="btn btn-ghost btn-sm">Clear</button>
+          <button id="solve-btn" class="btn btn-brand">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+            Solve
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    <div id="loading" class="hidden text-center py-12">
+      <div class="spinner spinner-dark mx-auto mb-3" style="width: 2rem; height: 2rem;"></div>
+      <p class="text-sm" style="color: var(--text-muted);">Solving your math problem step by step...</p>
+    </div>
+
+    <!-- Error State -->
+    <div id="error-msg" class="hidden card mb-4" style="border-color: #ef4444; border-left: 4px solid #ef4444; padding: 1rem;">
+      <p class="text-sm font-medium" style="color: #ef4444;" id="error-text">Something went wrong</p>
+    </div>
+
+    <!-- Results -->
+    <div id="results" class="hidden">
+
+      <!-- Problem Restated -->
+      <div class="result-section">
+        <h3>
+          <svg class="w-5 h-5" style="color: #6366f1;" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          Problem
+        </h3>
+        <div class="card">
+          <p id="problem-text" class="text-sm leading-relaxed font-medium" style="color: var(--text);"></p>
+        </div>
+      </div>
+
+      <!-- Solution (Highlighted) -->
+      <div class="result-section">
+        <h3>
+          <svg class="w-5 h-5" style="color: #10b981;" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          Solution
+        </h3>
+        <div class="card" style="border-left: 4px solid #10b981; background: rgba(16,185,129,0.04);">
+          <p id="solution-text" class="text-lg font-bold" style="color: #10b981;"></p>
+        </div>
+      </div>
+
+      <!-- Step-by-Step -->
+      <div class="result-section">
+        <h3>
+          <svg class="w-5 h-5" style="color: #6366f1;" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
+          Step-by-Step Solution
+        </h3>
+        <div class="card">
+          <ol id="steps-list" class="space-y-4"></ol>
+        </div>
+      </div>
+
+      <!-- Related Concept -->
+      <div class="result-section">
+        <h3>
+          <span style="color: #f59e0b; font-size: 1.125rem;">💡</span>
+          Related Concept
+        </h3>
+        <div class="card" style="border-left: 4px solid #f59e0b;">
+          <p id="concept-text" class="text-sm leading-relaxed" style="color: var(--text);"></p>
+        </div>
+      </div>
+
+      <!-- Study Tips -->
+      <div class="result-section">
+        <h3>
+          <span style="color: #ec4899; font-size: 1.125rem;">📚</span>
+          Study Tips
+        </h3>
+        <div class="card">
+          <ul id="tips-list" class="space-y-2"></ul>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex flex-wrap gap-2 mb-6">
+        <button id="copy-btn" class="btn btn-outline btn-sm">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+          Copy Solution
+        </button>
+        <button id="reset-btn" class="btn btn-outline btn-sm">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+          Solve Another Problem
+        </button>
+      </div>
+    </div>
+
+    <!-- SEO Content -->
+    <div class="mt-12 space-y-6" style="color: var(--text-muted);">
+      <h2 class="text-xl font-bold" style="color: var(--text);">AI-Powered Math Problem Solver for Students</h2>
+      <p class="text-sm leading-relaxed">Stuck on a math problem? Our AI Math Solver uses Google's Gemini model to solve any math problem and explain the solution step by step. Whether you're working through homework, preparing for exams, or trying to understand a tricky concept, this tool helps you learn by showing you exactly how to arrive at the answer.</p>
+      <ul class="text-sm space-y-2">
+        <li><strong style="color: var(--text);">Algebra</strong> - Solve equations, simplify expressions, factor polynomials</li>
+        <li><strong style="color: var(--text);">Calculus</strong> - Derivatives, integrals, limits, and series</li>
+        <li><strong style="color: var(--text);">Geometry</strong> - Area, volume, angles, and proofs</li>
+        <li><strong style="color: var(--text);">Statistics &amp; Probability</strong> - Mean, median, standard deviation, combinations</li>
+        <li><strong style="color: var(--text);">Step-by-Step Explanations</strong> - Understand the process, not just the answer</li>
+      </ul>
+      <p class="text-sm leading-relaxed">Perfect for students studying for board exams, JEE, SAT, GRE, GMAT, and university-level math courses. Every solution includes the underlying concept and study tips to strengthen your understanding.</p>
+    </div>
+  </div>
+
+</Layout>
+
+<script>
+  import { callAI, parseJSON, canUseFreeTier, incrementUsage, getRemainingUses } from '../../utils/ai';
+
+  function init() {
+    const input = document.getElementById('math-input') as HTMLTextAreaElement;
+    const charCount = document.getElementById('char-count')!;
+    const solveBtn = document.getElementById('solve-btn')!;
+    const clearBtn = document.getElementById('clear-btn')!;
+    const loading = document.getElementById('loading')!;
+    const errorMsg = document.getElementById('error-msg')!;
+    const errorText = document.getElementById('error-text')!;
+    const results = document.getElementById('results')!;
+    const copyBtn = document.getElementById('copy-btn')!;
+    const resetBtn = document.getElementById('reset-btn')!;
+    const chips = document.querySelectorAll('.example-chip');
+
+    // Restore text from sessionStorage
+    const saved = sessionStorage.getItem('sg_current_text');
+    if (saved) input.value = saved;
+
+    // Char count
+    input.addEventListener('input', () => {
+      const len = input.value.length;
+      charCount.textContent = `${len.toLocaleString()} / 2,000 characters`;
+      charCount.style.color = len > 2000 ? '#ef4444' : 'var(--text-muted)';
+    });
+    input.dispatchEvent(new Event('input'));
+
+    // Chip clicks fill input
+    chips.forEach(chip => {
+      chip.addEventListener('click', () => {
+        input.value = chip.textContent?.trim() || '';
+        input.dispatchEvent(new Event('input'));
+        input.focus();
+      });
+    });
+
+    // Clear
+    clearBtn.addEventListener('click', () => {
+      input.value = '';
+      results.classList.add('hidden');
+      errorMsg.classList.add('hidden');
+      input.dispatchEvent(new Event('input'));
+      input.focus();
+    });
+
+    // Reset button
+    resetBtn.addEventListener('click', () => {
+      input.value = '';
+      results.classList.add('hidden');
+      errorMsg.classList.add('hidden');
+      input.dispatchEvent(new Event('input'));
+      input.focus();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+
+    // Copy
+    copyBtn.addEventListener('click', () => {
+      const problem = document.getElementById('problem-text')?.textContent || '';
+      const solution = document.getElementById('solution-text')?.textContent || '';
+      const steps = Array.from(document.querySelectorAll('#steps-list li')).map(li => li.textContent?.trim()).join('\n');
+      const concept = document.getElementById('concept-text')?.textContent || '';
+      const tips = Array.from(document.querySelectorAll('#tips-list li')).map(li => li.textContent?.trim()).join('\n');
+      const full = `Problem: ${problem}\n\nSolution: ${solution}\n\nSteps:\n${steps}\n\nConcept: ${concept}\n\nTips:\n${tips}`;
+      navigator.clipboard.writeText(full).then(() => {
+        copyBtn.textContent = 'Copied!';
+        setTimeout(() => {
+          copyBtn.innerHTML = '<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg> Copy Solution';
+        }, 2000);
+      });
+    });
+
+    // Ctrl+Enter triggers solve
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) solveBtn.click();
+    });
+
+    // Solve
+    solveBtn.addEventListener('click', async () => {
+      const problem = input.value.trim();
+      if (!problem) {
+        errorText.textContent = 'Please type a math problem first.';
+        errorMsg.classList.remove('hidden');
+        return;
+      }
+      if (!canUseFreeTier()) {
+        errorText.textContent = 'You\'ve used all 5 free generations today. Come back tomorrow or upgrade to Pro!';
+        errorMsg.classList.remove('hidden');
+        return;
+      }
+
+      // Save text for other tools
+      sessionStorage.setItem('sg_current_text', problem);
+
+      // Show loading
+      errorMsg.classList.add('hidden');
+      results.classList.add('hidden');
+      loading.classList.remove('hidden');
+      solveBtn.disabled = true;
+      solveBtn.innerHTML = '<span class="spinner"></span> Solving...';
+
+      const prompt = `You are an expert math tutor. Solve the following math problem with detailed step-by-step explanations.
+
+Provide your response in this EXACT JSON format:
+{
+  "problem": "restated problem in clear mathematical language",
+  "solution": "final answer (be concise and precise)",
+  "steps": [
+    {"step": 1, "description": "what we do in this step", "expression": "the math expression or calculation"},
+    {"step": 2, "description": "what we do in this step", "expression": "the math expression or calculation"}
+  ],
+  "concept": "the underlying mathematical concept used to solve this",
+  "tips": ["study tip 1 related to this type of problem", "study tip 2"]
+}
+
+MATH PROBLEM:
+${problem.slice(0, 2000)}`;
+
+      const response = await callAI(prompt);
+
+      loading.classList.add('hidden');
+      solveBtn.disabled = false;
+      solveBtn.innerHTML = '<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg> Solve';
+
+      if (response.error) {
+        errorText.textContent = response.error;
+        errorMsg.classList.remove('hidden');
+        return;
+      }
+
+      const data = parseJSON(response.text);
+      if (!data) {
+        errorText.textContent = 'Failed to parse AI response. Please try again.';
+        errorMsg.classList.remove('hidden');
+        return;
+      }
+
+      // Track usage
+      incrementUsage();
+      const remaining = getRemainingUses();
+      const usageText = document.getElementById('usage-text');
+      const usageFill = document.getElementById('usage-fill');
+      if (usageText) usageText.textContent = `${remaining}/5 free`;
+      if (usageFill) usageFill.style.width = `${(remaining / 5) * 100}%`;
+
+      // Render results
+      document.getElementById('problem-text')!.textContent = data.problem || problem;
+      document.getElementById('solution-text')!.textContent = data.solution || 'No solution available.';
+
+      const stepsList = document.getElementById('steps-list')!;
+      stepsList.innerHTML = (data.steps || []).map((s: any) =>
+        `<li class="flex items-start gap-3 text-sm" style="color: var(--text); padding-bottom: 1rem; border-bottom: 1px solid var(--border);">
+          <span class="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold" style="background: rgba(99,102,241,0.1); color: #6366f1;">${s.step}</span>
+          <div class="flex-1">
+            <p class="font-medium" style="color: var(--text);">${s.description}</p>
+            <code class="block mt-1 px-3 py-1.5 rounded-lg text-sm" style="background: var(--bg-alt); color: #6366f1; font-family: 'SF Mono', 'Fira Code', monospace;">${s.expression}</code>
+          </div>
+        </li>`
+      ).join('');
+
+      document.getElementById('concept-text')!.textContent = data.concept || 'No concept information available.';
+
+      const tipsList = document.getElementById('tips-list')!;
+      tipsList.innerHTML = (data.tips || []).map((tip: string) =>
+        `<li class="flex items-start gap-2 text-sm" style="color: var(--text); padding: 0.5rem 0; border-bottom: 1px solid var(--border);">
+          <span style="color: #ec4899; flex-shrink: 0;">📌</span>
+          <span>${tip}</span>
+        </li>`
+      ).join('');
+
+      results.classList.remove('hidden');
+      results.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', init);
+  document.addEventListener('astro:page-load', init);
+</script>

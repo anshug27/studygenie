@@ -3,5 +3,5 @@ import tailwindcss from '@astrojs/tailwind';
 
 export default defineConfig({
   integrations: [tailwindcss()],
-  site: 'https://studygenie.in',
+  site: 'https://studygenie.pages.dev',
 });

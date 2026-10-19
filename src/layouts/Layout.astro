@@ -5,12 +5,14 @@ interface Props {
   title: string;
   description?: string;
   isTool?: boolean;
+  schema?: Record<string, any>;
 }
 
 const {
   title,
-  description = 'StudyGenie - AI-powered study companion. Summarize notes, generate flashcards, create quizzes, and understand any topic instantly.',
+  description = 'StudyGenie - AI-powered study companion. Summarize notes, generate flashcards, create quizzes, and understand any topic instantly. Free for students.',
   isTool = false,
+  schema,
 } = Astro.props;
 
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
@@ -23,15 +25,31 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
   <meta name="description" content={description} />
   <link rel="canonical" href={canonicalURL} />
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="sitemap" href="/sitemap.xml" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 
+  <!-- SEO -->
+  <meta name="robots" content="index, follow, max-image-preview:large" />
+  <meta name="author" content="StudyGenie" />
+  <meta name="keywords" content="AI study tool, summarizer, flashcards, quiz generator, study notes, exam preparation, NEET, JEE, board exams, study planner" />
   <meta property="og:title" content={title} />
   <meta property="og:description" content={description} />
   <meta property="og:type" content="website" />
   <meta property="og:url" content={canonicalURL} />
+  <meta property="og:site_name" content="StudyGenie" />
+  <meta property="og:locale" content="en_IN" />
   <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content={title} />
+  <meta name="twitter:description" content={description} />
+
+  {schema && (
+    <script type="application/ld+json" set:html={JSON.stringify(schema)} />
+  )}
+
+  <!-- Google AdSense -->
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXX" crossorigin="anonymous"></script>
 
   <title>{title}</title>
 </head>
@@ -45,11 +63,21 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
         <span class="text-xl font-bold" style="color: var(--text);">Study<span style="color: #6366f1;">Genie</span></span>
       </a>
 
-      <div class="hidden md:flex items-center gap-1">
+      <div class="hidden lg:flex items-center gap-1">
         <a href="/tools/summarize" class="btn btn-ghost btn-sm">Summarize</a>
         <a href="/tools/flashcards" class="btn btn-ghost btn-sm">Flashcards</a>
         <a href="/tools/quiz" class="btn btn-ghost btn-sm">Quiz</a>
         <a href="/tools/explain" class="btn btn-ghost btn-sm">Explain</a>
+        <a href="/tools/math" class="btn btn-ghost btn-sm">Math</a>
+        <div class="relative group">
+          <button class="btn btn-ghost btn-sm">More ▾</button>
+          <div class="hidden group-hover:block absolute right-0 top-full mt-1 w-48 rounded-xl shadow-lg z-50" style="background: var(--bg); border: 1px solid var(--border);">
+            <a href="/tools/essay" class="block px-4 py-2.5 text-sm no-underline rounded-t-xl" style="color: var(--text);">Essay Grader</a>
+            <a href="/tools/planner" class="block px-4 py-2.5 text-sm no-underline" style="color: var(--text);">Study Planner</a>
+            <a href="/tools/notes" class="block px-4 py-2.5 text-sm no-underline" style="color: var(--text);">Notes Organizer</a>
+            <a href="/tools/youtube" class="block px-4 py-2.5 text-sm no-underline rounded-b-xl" style="color: var(--text);">YouTube Summary</a>
+          </div>
+        </div>
       </div>
 
       <div class="flex items-center gap-3">
@@ -63,28 +91,52 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
           <svg id="icon-moon" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
           <svg id="icon-sun" class="w-5 h-5 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
         </button>
-        <button id="mobile-menu-btn" class="md:hidden btn btn-ghost btn-sm" style="padding: 0.5rem;" aria-label="Menu">
+        <button id="mobile-menu-btn" class="lg:hidden btn btn-ghost btn-sm" style="padding: 0.5rem;" aria-label="Menu">
           <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
         </button>
       </div>
     </div>
 
     <!-- Mobile menu -->
-    <div id="mobile-menu" class="hidden md:hidden" style="border-top: 1px solid var(--border); background: var(--bg);">
-      <div class="px-4 py-3 space-y-1">
-        <a href="/tools/summarize" class="block py-2 px-3 rounded-lg text-sm font-medium" style="color: var(--text);">Summarize</a>
-        <a href="/tools/flashcards" class="block py-2 px-3 rounded-lg text-sm font-medium" style="color: var(--text);">Flashcards</a>
-        <a href="/tools/quiz" class="block py-2 px-3 rounded-lg text-sm font-medium" style="color: var(--text);">Quiz</a>
-        <a href="/tools/explain" class="block py-2 px-3 rounded-lg text-sm font-medium" style="color: var(--text);">Explain</a>
-        <a href="/tools/youtube" class="block py-2 px-3 rounded-lg text-sm font-medium" style="color: var(--text);">YouTube Summary</a>
+    <div id="mobile-menu" class="hidden lg:hidden" style="border-top: 1px solid var(--border); background: var(--bg);">
+      <div class="px-4 py-3 grid grid-cols-2 gap-1">
+        <a href="/tools/summarize" class="py-2 px-3 rounded-lg text-sm font-medium no-underline" style="color: var(--text);">📝 Summarize</a>
+        <a href="/tools/flashcards" class="py-2 px-3 rounded-lg text-sm font-medium no-underline" style="color: var(--text);">🃏 Flashcards</a>
+        <a href="/tools/quiz" class="py-2 px-3 rounded-lg text-sm font-medium no-underline" style="color: var(--text);">🧪 Quiz</a>
+        <a href="/tools/explain" class="py-2 px-3 rounded-lg text-sm font-medium no-underline" style="color: var(--text);">💡 Explain</a>
+        <a href="/tools/math" class="py-2 px-3 rounded-lg text-sm font-medium no-underline" style="color: var(--text);">🔢 Math Solver</a>
+        <a href="/tools/essay" class="py-2 px-3 rounded-lg text-sm font-medium no-underline" style="color: var(--text);">✍️ Essay Grader</a>
+        <a href="/tools/planner" class="py-2 px-3 rounded-lg text-sm font-medium no-underline" style="color: var(--text);">📅 Study Planner</a>
+        <a href="/tools/notes" class="py-2 px-3 rounded-lg text-sm font-medium no-underline" style="color: var(--text);">📒 Notes</a>
+        <a href="/tools/youtube" class="py-2 px-3 rounded-lg text-sm font-medium no-underline" style="color: var(--text);">🎬 YouTube</a>
       </div>
     </div>
   </nav>
+
+  <!-- AdSense Top Banner (tool pages) -->
+  {isTool && (
+    <div class="max-w-4xl mx-auto px-4 mt-4">
+      <div class="ad-unit" style="min-height: 90px; background: var(--bg-alt); border: 1px dashed var(--border); border-radius: 0.75rem; display: flex; align-items: center; justify-content: center;">
+        <!-- Replace with actual AdSense code after approval -->
+        <!-- <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-XXXXXXX" data-ad-slot="XXXXXXX" data-ad-format="horizontal"></ins> -->
+        <span class="text-xs" style="color: var(--text-muted); opacity: 0.4;">Sponsored</span>
+      </div>
+    </div>
+  )}
 
   <!-- Main Content -->
   <main>
     <slot />
   </main>
+
+  <!-- AdSense Bottom Banner (tool pages) -->
+  {isTool && (
+    <div class="max-w-4xl mx-auto px-4 mb-8">
+      <div class="ad-unit" style="min-height: 90px; background: var(--bg-alt); border: 1px dashed var(--border); border-radius: 0.75rem; display: flex; align-items: center; justify-content: center;">
+        <span class="text-xs" style="color: var(--text-muted); opacity: 0.4;">Sponsored</span>
+      </div>
+    </div>
+  )}
 
   <!-- Footer -->
   {!isTool && (
@@ -99,32 +151,44 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
             <p class="text-sm" style="color: var(--text-muted);">AI-powered study companion for students everywhere.</p>
           </div>
           <div>
-            <h4 class="font-semibold text-sm mb-3" style="color: var(--text);">Tools</h4>
+            <h4 class="font-semibold text-sm mb-3" style="color: var(--text);">AI Tools</h4>
             <div class="space-y-2">
-              <a href="/tools/summarize" class="block text-sm no-underline" style="color: var(--text-muted);">Summarizer</a>
-              <a href="/tools/flashcards" class="block text-sm no-underline" style="color: var(--text-muted);">Flashcards</a>
+              <a href="/tools/summarize" class="block text-sm no-underline" style="color: var(--text-muted);">AI Summarizer</a>
+              <a href="/tools/flashcards" class="block text-sm no-underline" style="color: var(--text-muted);">Flashcard Generator</a>
               <a href="/tools/quiz" class="block text-sm no-underline" style="color: var(--text-muted);">Quiz Generator</a>
               <a href="/tools/explain" class="block text-sm no-underline" style="color: var(--text-muted);">Explain Topics</a>
+              <a href="/tools/math" class="block text-sm no-underline" style="color: var(--text-muted);">Math Solver</a>
+            </div>
+          </div>
+          <div>
+            <h4 class="font-semibold text-sm mb-3" style="color: var(--text);">More Tools</h4>
+            <div class="space-y-2">
+              <a href="/tools/essay" class="block text-sm no-underline" style="color: var(--text-muted);">Essay Grader</a>
+              <a href="/tools/planner" class="block text-sm no-underline" style="color: var(--text-muted);">Study Planner</a>
+              <a href="/tools/notes" class="block text-sm no-underline" style="color: var(--text-muted);">Notes Organizer</a>
+              <a href="/tools/youtube" class="block text-sm no-underline" style="color: var(--text-muted);">YouTube Summarizer</a>
             </div>
           </div>
           <div>
             <h4 class="font-semibold text-sm mb-3" style="color: var(--text);">Company</h4>
             <div class="space-y-2">
               <a href="/about" class="block text-sm no-underline" style="color: var(--text-muted);">About</a>
-              <a href="/privacy" class="block text-sm no-underline" style="color: var(--text-muted);">Privacy</a>
-              <a href="/terms" class="block text-sm no-underline" style="color: var(--text-muted);">Terms</a>
-            </div>
-          </div>
-          <div>
-            <h4 class="font-semibold text-sm mb-3" style="color: var(--text);">Support</h4>
-            <div class="space-y-2">
+              <a href="/privacy" class="block text-sm no-underline" style="color: var(--text-muted);">Privacy Policy</a>
+              <a href="/terms" class="block text-sm no-underline" style="color: var(--text-muted);">Terms of Service</a>
               <a href="mailto:hello@studygenie.in" class="block text-sm no-underline" style="color: var(--text-muted);">Contact</a>
-              <a href="#" class="block text-sm no-underline" style="color: var(--text-muted);">FAQ</a>
             </div>
           </div>
         </div>
-        <div class="mt-8 pt-8 text-center text-xs" style="border-top: 1px solid var(--border); color: var(--text-muted);">
-          &copy; 2026 StudyGenie. Made with love in India.
+
+        <!-- AdSense Footer -->
+        <div class="mt-8 pt-6" style="border-top: 1px solid var(--border);">
+          <div class="ad-unit mb-6" style="min-height: 90px; background: var(--bg); border: 1px dashed var(--border); border-radius: 0.75rem; display: flex; align-items: center; justify-content: center;">
+            <span class="text-xs" style="color: var(--text-muted); opacity: 0.4;">Sponsored</span>
+          </div>
+        </div>
+
+        <div class="text-center text-xs" style="color: var(--text-muted);">
+          &copy; 2026 StudyGenie. Free AI study tools for students. Made with love in India.
         </div>
       </div>
     </footer>
@@ -168,8 +232,6 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
       if (fillEl) fillEl.style.width = ((remaining / 5) * 100) + '%';
     }
     updateUsageDisplay();
-
-    // AI is handled server-side, no API key needed from users
   </script>
 </body>
 </html>

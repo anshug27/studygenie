@@ -1,0 +1,406 @@
+---
+import Layout from '../../layouts/Layout.astro';
+---
+<Layout title="AI Notes Organizer - StudyGenie" description="Transform messy notes into structured, organized study material. Supports Structured Notes, Mind Map, Cornell Notes, and Outline format. Powered by AI." isTool={true}>
+
+  <div class="tool-container">
+    <div class="tool-header">
+      <h1>&#x1F4D2; AI Notes Organizer</h1>
+      <p>Transform messy notes into structured, organized study material</p>
+    </div>
+
+    <!-- Input Area -->
+    <div class="tool-input-area">
+      <textarea id="notes-input" class="input" placeholder="Paste your raw or messy notes here... Lecture jottings, bullet points, random thoughts, copied text - anything works!" style="min-height: 220px;"></textarea>
+      <div class="flex items-center justify-between mt-3 flex-wrap gap-2">
+        <span id="char-count" class="text-xs" style="color: var(--text-muted);">0 / 8,000 characters</span>
+        <div class="flex items-center gap-3">
+          <div class="flex items-center gap-2">
+            <label for="format-select" class="text-sm font-medium" style="color: var(--text-muted);">Format:</label>
+            <select id="format-select" class="input" style="width: auto; padding: 0.5rem 0.75rem; font-size: 0.8125rem;">
+              <option value="structured" selected>Structured Notes</option>
+              <option value="mindmap">Mind Map (text)</option>
+              <option value="cornell">Cornell Notes</option>
+              <option value="outline">Outline Format</option>
+            </select>
+          </div>
+          <button id="clear-btn" class="btn btn-ghost btn-sm">Clear</button>
+          <button id="organize-btn" class="btn btn-brand">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+            Organize Notes
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    <div id="loading" class="hidden text-center py-12">
+      <div class="spinner spinner-dark mx-auto mb-3" style="width: 2rem; height: 2rem;"></div>
+      <p class="text-sm" style="color: var(--text-muted);">Organizing your notes with AI...</p>
+    </div>
+
+    <!-- Error State -->
+    <div id="error-msg" class="hidden card mb-4" style="border-color: #ef4444; border-left: 4px solid #ef4444; padding: 1rem;">
+      <p class="text-sm font-medium" style="color: #ef4444;" id="error-text">Something went wrong</p>
+    </div>
+
+    <!-- Results -->
+    <div id="results" class="hidden">
+
+      <!-- Title Badge -->
+      <div class="text-center mb-6">
+        <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-semibold" style="background: rgba(99,102,241,0.1); color: #6366f1;">
+          <span id="result-title">Organized Notes</span>
+        </span>
+      </div>
+
+      <!-- Organized Sections -->
+      <div class="result-section">
+        <h3>
+          <svg class="w-5 h-5" style="color: #6366f1;" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          Organized Notes
+        </h3>
+        <div id="sections-container" class="space-y-4"></div>
+      </div>
+
+      <!-- Summary -->
+      <div class="result-section">
+        <h3>
+          <span style="color: #10b981; font-size: 1.125rem;">&#x1F4CB;</span>
+          Summary
+        </h3>
+        <div class="card" style="border-left: 4px solid #10b981; padding: 1.25rem;">
+          <p id="summary-text" class="text-sm leading-relaxed" style="color: var(--text);"></p>
+        </div>
+      </div>
+
+      <!-- Connections -->
+      <div class="result-section">
+        <h3>
+          <svg class="w-5 h-5" style="color: #f59e0b;" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+          Connections Between Topics
+        </h3>
+        <div class="card" style="padding: 1.25rem;">
+          <ul id="connections-list" class="space-y-2"></ul>
+        </div>
+      </div>
+
+      <!-- Review Questions -->
+      <div class="result-section">
+        <h3>
+          <span style="color: #ec4899; font-size: 1.125rem;">&#x2753;</span>
+          Review Questions
+        </h3>
+        <div class="card" style="padding: 1.25rem;">
+          <ol id="questions-list" class="space-y-3"></ol>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex flex-wrap gap-2 mb-6">
+        <button id="copy-btn" class="btn btn-outline btn-sm">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+          Copy Notes
+        </button>
+        <a href="/tools/flashcards" class="btn btn-outline btn-sm">
+          &#x1F0CF; Make Flashcards
+        </a>
+        <button id="reset-btn" class="btn btn-outline btn-sm">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+          Organize New Notes
+        </button>
+      </div>
+    </div>
+
+    <!-- SEO Content -->
+    <div class="mt-12 space-y-6" style="color: var(--text-muted);">
+      <h2 class="text-xl font-bold" style="color: var(--text);">Transform Your Notes with AI</h2>
+      <p class="text-sm leading-relaxed">Taking notes is essential for learning, but messy, disorganized notes can be hard to review. Our AI Notes Organizer uses Google's Gemini model to restructure your raw notes into clean, well-organized study material. Whether you scribbled during a lecture, copied text from multiple sources, or just have random bullet points, this tool transforms them into structured knowledge.</p>
+      <ul class="text-sm space-y-2">
+        <li><strong style="color: var(--text);">Structured Notes</strong> - Clear sections with headings, key points, and examples for easy revision</li>
+        <li><strong style="color: var(--text);">Mind Map (Text)</strong> - Visual hierarchy showing how topics connect and branch out</li>
+        <li><strong style="color: var(--text);">Cornell Notes</strong> - The proven Cornell system with cues, notes, and summary sections</li>
+        <li><strong style="color: var(--text);">Outline Format</strong> - Hierarchical outline with main topics, subtopics, and supporting details</li>
+      </ul>
+      <h3 class="text-lg font-bold" style="color: var(--text);">Effective Note-Taking Strategies</h3>
+      <p class="text-sm leading-relaxed">Research shows that organized notes lead to better recall and understanding. The Cornell method splits your page into cues, notes, and summaries, encouraging active review. Mind maps help visualize relationships between concepts. Structured notes with clear headings make revision faster and more effective. Whatever method works for you, our AI tool helps clean up your raw notes into any format instantly.</p>
+      <h3 class="text-lg font-bold" style="color: var(--text);">From Notes to Active Study</h3>
+      <p class="text-sm leading-relaxed">Don't stop at organizing your notes. Use the review questions generated by the AI to test your understanding. Then, turn your organized notes into flashcards with our <a href="/tools/flashcards" style="color: #6366f1; text-decoration: underline;">AI Flashcard Generator</a> for spaced repetition practice. This combination of note-taking, self-testing, and spaced review is backed by cognitive science as one of the most effective study strategies.</p>
+    </div>
+  </div>
+
+</Layout>
+
+<script>
+  import { callAI, parseJSON, canUseFreeTier, incrementUsage, getRemainingUses } from '../../utils/ai';
+
+  function init() {
+    const notesInput = document.getElementById('notes-input') as HTMLTextAreaElement;
+    const charCount = document.getElementById('char-count')!;
+    const formatSelect = document.getElementById('format-select') as HTMLSelectElement;
+    const organizeBtn = document.getElementById('organize-btn')!;
+    const clearBtn = document.getElementById('clear-btn')!;
+    const loading = document.getElementById('loading')!;
+    const errorMsg = document.getElementById('error-msg')!;
+    const errorText = document.getElementById('error-text')!;
+    const results = document.getElementById('results')!;
+    const copyBtn = document.getElementById('copy-btn')!;
+    const resetBtn = document.getElementById('reset-btn')!;
+
+    let notesData: any = null;
+
+    // Char count
+    notesInput.addEventListener('input', () => {
+      const len = notesInput.value.length;
+      charCount.textContent = `${len.toLocaleString()} / 8,000 characters`;
+      charCount.style.color = len > 8000 ? '#ef4444' : 'var(--text-muted)';
+    });
+    notesInput.dispatchEvent(new Event('input'));
+
+    // Clear
+    clearBtn.addEventListener('click', () => {
+      notesInput.value = '';
+      results.classList.add('hidden');
+      errorMsg.classList.add('hidden');
+      notesData = null;
+      notesInput.dispatchEvent(new Event('input'));
+    });
+
+    // Reset
+    resetBtn.addEventListener('click', () => {
+      notesInput.value = '';
+      results.classList.add('hidden');
+      errorMsg.classList.add('hidden');
+      notesData = null;
+      notesInput.dispatchEvent(new Event('input'));
+      notesInput.focus();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+
+    // Build text for copy
+    function buildNotesText(): string {
+      if (!notesData) return '';
+      let text = `${notesData.title || 'Organized Notes'}\n${'='.repeat(50)}\n\n`;
+
+      if (notesData.sections && Array.isArray(notesData.sections)) {
+        notesData.sections.forEach((section: any) => {
+          text += `## ${section.heading}\n`;
+          text += `${section.content}\n\n`;
+          if (section.keyPoints && section.keyPoints.length > 0) {
+            text += `Key Points:\n`;
+            section.keyPoints.forEach((p: string) => { text += `  - ${p}\n`; });
+            text += '\n';
+          }
+          if (section.examples && section.examples.length > 0) {
+            text += `Examples:\n`;
+            section.examples.forEach((e: string) => { text += `  - ${e}\n`; });
+            text += '\n';
+          }
+        });
+      }
+
+      if (notesData.summary) {
+        text += `SUMMARY\n${'-'.repeat(30)}\n${notesData.summary}\n\n`;
+      }
+
+      if (notesData.connections && Array.isArray(notesData.connections) && notesData.connections.length > 0) {
+        text += `CONNECTIONS\n${'-'.repeat(30)}\n`;
+        notesData.connections.forEach((c: string) => { text += `- ${c}\n`; });
+        text += '\n';
+      }
+
+      if (notesData.reviewQuestions && Array.isArray(notesData.reviewQuestions) && notesData.reviewQuestions.length > 0) {
+        text += `REVIEW QUESTIONS\n${'-'.repeat(30)}\n`;
+        notesData.reviewQuestions.forEach((q: string, i: number) => { text += `${i + 1}. ${q}\n`; });
+      }
+
+      return text;
+    }
+
+    // Copy
+    copyBtn.addEventListener('click', () => {
+      const text = buildNotesText();
+      navigator.clipboard.writeText(text).then(() => {
+        copyBtn.textContent = 'Copied!';
+        setTimeout(() => {
+          copyBtn.innerHTML = '<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg> Copy Notes';
+        }, 2000);
+      });
+    });
+
+    // Organize notes
+    organizeBtn.addEventListener('click', async () => {
+      const rawNotes = notesInput.value.trim();
+      const format = formatSelect.value;
+
+      if (!rawNotes) {
+        errorText.textContent = 'Please paste some notes first.';
+        errorMsg.classList.remove('hidden');
+        return;
+      }
+      if (rawNotes.length < 30) {
+        errorText.textContent = 'Please paste at least 30 characters for meaningful organization.';
+        errorMsg.classList.remove('hidden');
+        return;
+      }
+      if (!canUseFreeTier()) {
+        errorText.textContent = "You've used all 5 free generations today. Come back tomorrow or upgrade to Pro!";
+        errorMsg.classList.remove('hidden');
+        return;
+      }
+
+      const formatLabels: Record<string, string> = {
+        structured: 'Structured Notes with clear headings, detailed content, key points, and examples',
+        mindmap: 'Mind Map (text-based) showing hierarchical relationships and branches between concepts',
+        cornell: 'Cornell Notes format with cue column topics, detailed notes, and a bottom summary',
+        outline: 'Outline Format with hierarchical main topics (I, II, III), subtopics (A, B, C), and supporting details (1, 2, 3)'
+      };
+
+      const prompt = `You are an expert note-taking and study skills coach. Organize the following messy/raw notes into clean, well-structured study material.
+
+Output format requested: ${formatLabels[format] || 'Structured Notes'}
+
+Provide your response in this EXACT JSON format:
+{
+  "title": "Topic title derived from the notes",
+  "format": "${format}",
+  "sections": [
+    {"heading": "Section 1 Heading", "content": "Detailed organized content for this section...", "keyPoints": ["key point 1", "key point 2"], "examples": ["example 1"]}
+  ],
+  "summary": "Brief 2-3 sentence overview of all the material",
+  "connections": ["How topic A relates to topic B", "Connection between concept X and Y"],
+  "reviewQuestions": ["Question that tests understanding of key concept 1", "Question about relationship between topics"]
+}
+
+Rules:
+- Extract a meaningful title from the content
+- Create 2-6 logical sections based on the material
+- Each section must have a clear heading, organized content paragraph, and at least 1-2 key points
+- Include examples where the notes contain or imply them
+- The summary should capture the big picture in 2-3 sentences
+- Include 2-4 connections showing how topics relate to each other
+- Generate 3-5 review questions that test real understanding
+- Clean up grammar and formatting while preserving all information
+- For ${format} format, structure the content accordingly within the sections
+
+RAW NOTES:
+${rawNotes.slice(0, 8000)}`;
+
+      // Show loading
+      errorMsg.classList.add('hidden');
+      results.classList.add('hidden');
+      loading.classList.remove('hidden');
+      organizeBtn.disabled = true;
+      organizeBtn.innerHTML = '<span class="spinner"></span> Organizing...';
+
+      const response = await callAI(prompt);
+
+      loading.classList.add('hidden');
+      organizeBtn.disabled = false;
+      organizeBtn.innerHTML = '<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg> Organize Notes';
+
+      if (response.error) {
+        errorText.textContent = response.error;
+        errorMsg.classList.remove('hidden');
+        return;
+      }
+
+      const data = parseJSON(response.text);
+      if (!data || !data.sections || !Array.isArray(data.sections) || data.sections.length === 0) {
+        errorText.textContent = 'Failed to parse AI response. Please try again.';
+        errorMsg.classList.remove('hidden');
+        return;
+      }
+
+      // Track usage
+      incrementUsage();
+      const remaining = getRemainingUses();
+      const usageTextEl = document.getElementById('usage-text');
+      const usageFill = document.getElementById('usage-fill');
+      if (usageTextEl) usageTextEl.textContent = `${remaining}/5 free`;
+      if (usageFill) usageFill.style.width = `${(remaining / 5) * 100}%`;
+
+      notesData = data;
+
+      // Save text for flashcards tool
+      sessionStorage.setItem('sg_current_text', rawNotes);
+
+      // Render title
+      document.getElementById('result-title')!.textContent = data.title || 'Organized Notes';
+
+      // Render sections
+      const sectionsContainer = document.getElementById('sections-container')!;
+      const sectionColors = ['#6366f1', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6', '#14b8a6'];
+      sectionsContainer.innerHTML = data.sections.map((section: any, i: number) => {
+        const color = sectionColors[i % sectionColors.length];
+        let html = `<div class="card" style="padding: 1.25rem; border-left: 4px solid ${color};">`;
+        html += `<h4 class="text-base font-bold mb-2" style="color: var(--text);">${escapeHtml(section.heading)}</h4>`;
+        html += `<p class="text-sm leading-relaxed mb-3" style="color: var(--text-muted);">${escapeHtml(section.content)}</p>`;
+
+        // Key points
+        if (section.keyPoints && Array.isArray(section.keyPoints) && section.keyPoints.length > 0) {
+          html += `<div class="mb-2">
+            <p class="text-xs font-semibold mb-1" style="color: ${color};">Key Points</p>
+            <ul class="space-y-1">
+              ${section.keyPoints.map((p: string) => `<li class="flex items-start gap-2 text-sm" style="color: var(--text);"><span style="color: ${color}; flex-shrink: 0;">&#x2022;</span> ${escapeHtml(p)}</li>`).join('')}
+            </ul>
+          </div>`;
+        }
+
+        // Examples
+        if (section.examples && Array.isArray(section.examples) && section.examples.length > 0) {
+          html += `<div>
+            <p class="text-xs font-semibold mb-1" style="color: #f59e0b;">Examples</p>
+            <ul class="space-y-1">
+              ${section.examples.map((e: string) => `<li class="text-sm" style="color: var(--text-muted);"><span style="color: #f59e0b;">&#x25B8;</span> ${escapeHtml(e)}</li>`).join('')}
+            </ul>
+          </div>`;
+        }
+
+        html += `</div>`;
+        return html;
+      }).join('');
+
+      // Render summary
+      document.getElementById('summary-text')!.textContent = data.summary || 'No summary available.';
+
+      // Render connections
+      const connectionsList = document.getElementById('connections-list')!;
+      if (data.connections && Array.isArray(data.connections) && data.connections.length > 0) {
+        connectionsList.innerHTML = data.connections.map((conn: string) =>
+          `<li class="flex items-start gap-2 text-sm" style="color: var(--text);">
+            <svg class="w-4 h-4 flex-shrink-0 mt-0.5" style="color: #f59e0b;" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+            <span style="color: var(--text-muted);">${escapeHtml(conn)}</span>
+          </li>`
+        ).join('');
+      } else {
+        connectionsList.innerHTML = '<li class="text-sm" style="color: var(--text-muted);">No connections identified.</li>';
+      }
+
+      // Render review questions
+      const questionsList = document.getElementById('questions-list')!;
+      if (data.reviewQuestions && Array.isArray(data.reviewQuestions) && data.reviewQuestions.length > 0) {
+        questionsList.innerHTML = data.reviewQuestions.map((q: string, i: number) =>
+          `<li class="flex items-start gap-3 text-sm" style="color: var(--text);">
+            <span class="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold" style="background: rgba(236,72,153,0.1); color: #ec4899;">${i + 1}</span>
+            <span class="pt-0.5" style="color: var(--text-muted);">${escapeHtml(q)}</span>
+          </li>`
+        ).join('');
+      } else {
+        questionsList.innerHTML = '<li class="text-sm" style="color: var(--text-muted);">No review questions generated.</li>';
+      }
+
+      results.classList.remove('hidden');
+      results.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  }
+
+  function escapeHtml(str: string): string {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  document.addEventListener('DOMContentLoaded', init);
+  document.addEventListener('astro:page-load', init);
+</script>
