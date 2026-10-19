@@ -109,6 +109,8 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
         <a href="/dashboard" id="nav-user-btn" class="hidden items-center gap-2 no-underline" style="color: var(--text);">
           <div id="nav-avatar" class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold" style="background: rgba(99,102,241,0.15); color: #6366f1;"></div>
         </a>
+        <!-- Auth: Logout button (shown when logged in) -->
+        <button id="nav-logout-btn" class="btn btn-ghost btn-sm hidden">Log Out</button>
         <button id="theme-toggle" class="btn btn-ghost btn-sm" style="padding: 0.5rem;" aria-label="Toggle theme">
           <svg id="icon-moon" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
           <svg id="icon-sun" class="w-5 h-5 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
@@ -262,18 +264,29 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 
   <!-- Auth state for navbar (non-inline so it can import Firebase) -->
   <script>
-    import { onAuthChange } from '../utils/auth';
+    import { onAuthChange, signOut } from '../utils/auth';
 
     function initNavAuth() {
       const loginBtn = document.getElementById('nav-login-btn');
+      const logoutBtn = document.getElementById('nav-logout-btn');
       const userBtn = document.getElementById('nav-user-btn');
       const navAvatar = document.getElementById('nav-avatar');
+
+      logoutBtn?.addEventListener('click', async () => {
+        try {
+          await signOut();
+          window.location.href = '/'; // optional: redirect to home after logout
+        } catch (error) {
+          console.error('Logout error:', error);
+        }
+      });
 
       onAuthChange((user) => {
         if (user) {
           loginBtn?.classList.add('hidden');
           userBtn?.classList.remove('hidden');
           userBtn?.classList.add('flex');
+          logoutBtn?.classList.remove('hidden');
           if (navAvatar) {
             if (user.photoURL) {
               navAvatar.innerHTML = `<img src="${user.photoURL}" class="w-8 h-8 rounded-full" alt="" />`;
@@ -289,6 +302,8 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
         } else {
           loginBtn?.classList.remove('hidden');
           userBtn?.classList.add('hidden');
+          userBtn?.classList.remove('flex');
+          logoutBtn?.classList.add('hidden');
         }
       });
     }
