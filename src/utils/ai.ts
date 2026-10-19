@@ -1,40 +1,29 @@
-// Gemini AI integration - calls the free Gemini API
-// Note: In production, this should go through a backend (Cloudflare Worker)
-// to protect API keys. For MVP, we use a client-side call with the user's key
-// or a proxy endpoint.
-
-const GEMINI_ENDPOINT = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
+// AI integration - calls our server-side proxy which holds the Gemini API key
+// Users never need to provide their own API key
 
 export interface AIResponse {
   text: string;
   error?: string;
 }
 
-export async function callGemini(prompt: string, apiKey: string): Promise<AIResponse> {
+export async function callAI(prompt: string): Promise<AIResponse> {
   try {
-    const res = await fetch(`${GEMINI_ENDPOINT}?key=${apiKey}`, {
+    const res = await fetch('/api/generate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: {
-          temperature: 0.7,
-          maxOutputTokens: 4096,
-        },
-      }),
+      body: JSON.stringify({ prompt }),
     });
 
+    const data = await res.json();
+
     if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      return { text: '', error: err?.error?.message || `API error: ${res.status}` };
+      return { text: '', error: data?.error || `Error: ${res.status}` };
     }
 
-    const data = await res.json();
-    const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
-    if (!text) return { text: '', error: 'No response from AI' };
-    return { text };
+    if (!data?.text) return { text: '', error: 'No response from AI' };
+    return { text: data.text };
   } catch (e: any) {
-    return { text: '', error: e.message || 'Network error' };
+    return { text: '', error: e.message || 'Network error. Please try again.' };
   }
 }
 
@@ -144,7 +133,6 @@ export function incrementUsage(): void {
   try {
     const data = JSON.parse(localStorage.getItem(USAGE_KEY) || '{}');
     const today = new Date().toISOString().split('T')[0];
-    // Clean old dates
     const cleaned: Record<string, number> = {};
     cleaned[today] = (data[today] || 0) + 1;
     localStorage.setItem(USAGE_KEY, JSON.stringify(cleaned));
@@ -159,26 +147,9 @@ export function getRemainingUses(): number {
   return Math.max(0, MAX_FREE_USES - getUsageToday());
 }
 
-// ===== API KEY MANAGEMENT =====
-
-const API_KEY_STORAGE = 'sg_gemini_key';
-
-export function getApiKey(): string {
-  return localStorage.getItem(API_KEY_STORAGE) || '';
-}
-
-export function setApiKey(key: string): void {
-  localStorage.setItem(API_KEY_STORAGE, key);
-}
-
-export function hasApiKey(): boolean {
-  return !!getApiKey();
-}
-
 // ===== PARSE AI RESPONSE =====
 
 export function parseJSON(text: string): any {
-  // Try to extract JSON from markdown code blocks or raw text
   const jsonMatch = text.match(/```(?:json)?\s*([\s\S]*?)```/) || text.match(/(\{[\s\S]*\})/);
   if (jsonMatch) {
     try {

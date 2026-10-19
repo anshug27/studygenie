@@ -1,4 +1,6 @@
 ---
+import '../styles/global.css';
+
 interface Props {
   title: string;
   description?: string;
@@ -78,25 +80,6 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
       </div>
     </div>
   </nav>
-
-  <!-- API Key Setup Modal -->
-  <div id="api-key-modal" class="hidden fixed inset-0 z-[60] flex items-center justify-center" style="background: rgba(0,0,0,0.5); backdrop-filter: blur(4px);">
-    <div class="card mx-4" style="max-width: 28rem; width: 100%;">
-      <h3 class="text-lg font-bold mb-1" style="color: var(--text);">Set Up Your AI Key</h3>
-      <p class="text-sm mb-4" style="color: var(--text-muted);">Get a free Gemini API key to use StudyGenie. It's free and takes 30 seconds.</p>
-      <ol class="text-sm mb-4 space-y-2" style="color: var(--text-muted);">
-        <li>1. Go to <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener" style="color: #6366f1; font-weight: 600;">aistudio.google.com/apikey</a></li>
-        <li>2. Click "Create API Key"</li>
-        <li>3. Copy and paste it below</li>
-      </ol>
-      <input id="api-key-input" type="password" placeholder="Paste your Gemini API key..." class="input mb-3" />
-      <div class="flex gap-2">
-        <button id="save-key-btn" class="btn btn-brand flex-1">Save Key</button>
-        <button id="close-key-modal" class="btn btn-outline">Cancel</button>
-      </div>
-      <p class="text-xs mt-3" style="color: var(--text-muted);">Your key is stored locally and never sent to our servers.</p>
-    </div>
-  </div>
 
   <!-- Main Content -->
   <main>
@@ -186,27 +169,7 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
     }
     updateUsageDisplay();
 
-    // API key modal
-    const modal = document.getElementById('api-key-modal');
-    const saveBtn = document.getElementById('save-key-btn');
-    const closeBtn = document.getElementById('close-key-modal');
-
-    if (saveBtn) {
-      saveBtn.addEventListener('click', () => {
-        const key = document.getElementById('api-key-input')?.value?.trim();
-        if (key && key.length > 10) {
-          localStorage.setItem('sg_gemini_key', key);
-          modal?.classList.add('hidden');
-          location.reload();
-        }
-      });
-    }
-    closeBtn?.addEventListener('click', () => modal?.classList.add('hidden'));
-
-    // Show modal if no key and on a tool page
-    if (!localStorage.getItem('sg_gemini_key') && window.location.pathname.startsWith('/tools/')) {
-      modal?.classList.remove('hidden');
-    }
+    // AI is handled server-side, no API key needed from users
   </script>
 </body>
 </html>

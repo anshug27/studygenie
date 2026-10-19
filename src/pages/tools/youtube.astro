@@ -140,7 +140,7 @@ import Layout from '../../layouts/Layout.astro';
 </Layout>
 
 <script>
-  import { callGemini, youtubePrompt, parseJSON, getApiKey, hasApiKey, canUseFreeTier, incrementUsage, getRemainingUses } from '../../utils/ai';
+  import { callAI, youtubePrompt, parseJSON, canUseFreeTier, incrementUsage, getRemainingUses } from '../../utils/ai';
 
   function init() {
     const urlInput = document.getElementById('url-input') as HTMLInputElement;
@@ -210,10 +210,7 @@ import Layout from '../../layouts/Layout.astro';
         errorMsg.classList.remove('hidden');
         return;
       }
-      if (!hasApiKey()) {
-        document.getElementById('api-key-modal')?.classList.remove('hidden');
-        return;
-      }
+      // API key is handled server-side
       if (!canUseFreeTier()) {
         errorText.textContent = 'You\'ve used all 5 free generations today. Come back tomorrow or upgrade to Pro!';
         errorMsg.classList.remove('hidden');
@@ -230,7 +227,7 @@ import Layout from '../../layouts/Layout.astro';
       summarizeBtn.disabled = true;
       summarizeBtn.innerHTML = '<span class="spinner"></span> Analyzing...';
 
-      const response = await callGemini(youtubePrompt(transcript), getApiKey());
+      const response = await callAI(youtubePrompt(transcript));
 
       loading.classList.add('hidden');
       summarizeBtn.disabled = false;
