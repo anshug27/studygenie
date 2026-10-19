@@ -10,6 +10,8 @@
   <url><loc>https://studygenie.pages.dev/tools/planner</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
   <url><loc>https://studygenie.pages.dev/tools/notes</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
   <url><loc>https://studygenie.pages.dev/tools/youtube</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://studygenie.pages.dev/login</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://studygenie.pages.dev/dashboard</loc><changefreq>daily</changefreq><priority>0.6</priority></url>
   <url><loc>https://studygenie.pages.dev/about</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
   <url><loc>https://studygenie.pages.dev/privacy</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
   <url><loc>https://studygenie.pages.dev/terms</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>

@@ -87,6 +87,12 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
             <div id="usage-fill" class="usage-bar-fill" style="width: 100%;"></div>
           </div>
         </div>
+        <!-- Auth: Login button (shown when not logged in) -->
+        <a href="/login" id="nav-login-btn" class="btn btn-brand btn-sm hidden">Log In</a>
+        <!-- Auth: User avatar (shown when logged in) -->
+        <a href="/dashboard" id="nav-user-btn" class="hidden items-center gap-2 no-underline" style="color: var(--text);">
+          <div id="nav-avatar" class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold" style="background: rgba(99,102,241,0.15); color: #6366f1;"></div>
+        </a>
         <button id="theme-toggle" class="btn btn-ghost btn-sm" style="padding: 0.5rem;" aria-label="Toggle theme">
           <svg id="icon-moon" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
           <svg id="icon-sun" class="w-5 h-5 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
@@ -220,7 +226,7 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
       document.getElementById('mobile-menu')?.classList.toggle('hidden');
     });
 
-    // Usage display
+    // Usage display (local fallback for anonymous users)
     function updateUsageDisplay() {
       const data = JSON.parse(localStorage.getItem('sg_daily_usage') || '{}');
       const today = new Date().toISOString().split('T')[0];
@@ -232,6 +238,43 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
       if (fillEl) fillEl.style.width = ((remaining / 5) * 100) + '%';
     }
     updateUsageDisplay();
+  </script>
+
+  <!-- Auth state for navbar (non-inline so it can import Firebase) -->
+  <script>
+    import { onAuthChange } from '../utils/auth';
+
+    function initNavAuth() {
+      const loginBtn = document.getElementById('nav-login-btn');
+      const userBtn = document.getElementById('nav-user-btn');
+      const navAvatar = document.getElementById('nav-avatar');
+
+      onAuthChange((user) => {
+        if (user) {
+          loginBtn?.classList.add('hidden');
+          userBtn?.classList.remove('hidden');
+          userBtn?.classList.add('flex');
+          if (navAvatar) {
+            if (user.photoURL) {
+              navAvatar.innerHTML = `<img src="${user.photoURL}" class="w-8 h-8 rounded-full" alt="" />`;
+            } else {
+              navAvatar.textContent = (user.displayName || user.email || 'U')[0].toUpperCase();
+            }
+          }
+          // Update usage display for logged-in users (10/day)
+          const textEl = document.getElementById('usage-text');
+          const fillEl = document.getElementById('usage-fill');
+          if (textEl) textEl.textContent = '10/day';
+          if (fillEl) fillEl.style.width = '100%';
+        } else {
+          loginBtn?.classList.remove('hidden');
+          userBtn?.classList.add('hidden');
+        }
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', initNavAuth);
+    document.addEventListener('astro:page-load', initNavAuth);
   </script>
 </body>
 </html>
