@@ -1,0 +1,174 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+<Layout title="Privacy Policy - StudyGenie" description="StudyGenie privacy policy. Learn how we handle your data, API keys, and AI processing.">
+
+  <div class="max-w-3xl mx-auto px-4 py-12">
+
+    <!-- Back Link -->
+    <a href="/" class="inline-flex items-center gap-1 text-sm font-medium mb-8 no-underline" style="color: #6366f1;">
+      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+      Back to Home
+    </a>
+
+    <!-- Header -->
+    <h1 class="text-3xl md:text-4xl font-extrabold mb-2" style="color: var(--text);">Privacy Policy</h1>
+    <p class="text-sm mb-10" style="color: var(--text-muted);">Last updated: January 2026</p>
+
+    <div class="space-y-8">
+
+      <!-- Intro -->
+      <section>
+        <div class="card">
+          <p class="text-sm leading-relaxed" style="color: var(--text);">
+            At StudyGenie, we take your privacy seriously. This Privacy Policy explains how we collect, use, and protect your information when you use our AI-powered study tools. We've designed StudyGenie to be privacy-first — your data stays on your device.
+          </p>
+        </div>
+      </section>
+
+      <!-- Data Collection -->
+      <section>
+        <h2 class="text-xl font-bold mb-3" style="color: var(--text);">1. What Data We Collect</h2>
+        <div class="card">
+          <p class="text-sm leading-relaxed mb-3" style="color: var(--text);">
+            <strong>Short answer: Almost nothing.</strong> StudyGenie is designed to minimize data collection.
+          </p>
+          <ul class="text-sm space-y-2" style="color: var(--text-muted);">
+            <li class="flex items-start gap-2">
+              <span style="color: #10b981; flex-shrink: 0;">✓</span>
+              <span><strong style="color: var(--text);">No account required</strong> — You don't need to sign up or provide any personal information to use StudyGenie.</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <span style="color: #10b981; flex-shrink: 0;">✓</span>
+              <span><strong style="color: var(--text);">No personal data collected</strong> — We do not collect your name, email, phone number, or any personally identifiable information.</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <span style="color: #10b981; flex-shrink: 0;">✓</span>
+              <span><strong style="color: var(--text);">No cookies for tracking</strong> — We do not use tracking cookies or third-party trackers.</span>
+            </li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- Local Storage -->
+      <section>
+        <h2 class="text-xl font-bold mb-3" style="color: var(--text);">2. Local Storage</h2>
+        <div class="card">
+          <p class="text-sm leading-relaxed mb-3" style="color: var(--text);">
+            StudyGenie stores the following data in your browser's localStorage. This data never leaves your device and is not sent to our servers:
+          </p>
+          <ul class="text-sm space-y-2" style="color: var(--text-muted);">
+            <li class="flex items-start gap-2">
+              <span style="color: #6366f1; flex-shrink: 0;">•</span>
+              <span><strong style="color: var(--text);">API Key</strong> — Your Gemini API key is stored locally in your browser. It is only used to make direct API calls to Google's Gemini API and is never transmitted to StudyGenie servers.</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <span style="color: #6366f1; flex-shrink: 0;">•</span>
+              <span><strong style="color: var(--text);">Usage Counter</strong> — We track your daily usage count locally to enforce the free tier limit (5 uses per day). This resets daily.</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <span style="color: #6366f1; flex-shrink: 0;">•</span>
+              <span><strong style="color: var(--text);">Theme Preference</strong> — Your light/dark mode preference is saved locally for a consistent experience.</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <span style="color: #6366f1; flex-shrink: 0;">•</span>
+              <span><strong style="color: var(--text);">Session Data</strong> — Text you paste may be temporarily stored in sessionStorage so you can use multiple tools on the same content. This is cleared when you close the browser tab.</span>
+            </li>
+          </ul>
+          <p class="text-sm mt-3" style="color: var(--text-muted);">
+            You can clear all locally stored data at any time by clearing your browser's site data for StudyGenie.
+          </p>
+        </div>
+      </section>
+
+      <!-- AI Processing -->
+      <section>
+        <h2 class="text-xl font-bold mb-3" style="color: var(--text);">3. AI Processing</h2>
+        <div class="card">
+          <p class="text-sm leading-relaxed mb-3" style="color: var(--text);">
+            When you use any of our AI tools (summarize, flashcards, quiz, explain, YouTube summary), the text you provide is sent directly from your browser to <strong>Google's Gemini API</strong> for processing. Here's what that means:
+          </p>
+          <ul class="text-sm space-y-2" style="color: var(--text-muted);">
+            <li class="flex items-start gap-2">
+              <span style="color: #f59e0b; flex-shrink: 0;">→</span>
+              <span>Your text is sent directly to Google's servers — it does not pass through StudyGenie's servers.</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <span style="color: #f59e0b; flex-shrink: 0;">→</span>
+              <span>Google's privacy policy and terms of service apply to the data processed by the Gemini API.</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <span style="color: #f59e0b; flex-shrink: 0;">→</span>
+              <span>We recommend not pasting sensitive, confidential, or personally identifiable information into any AI tool.</span>
+            </li>
+          </ul>
+          <p class="text-sm mt-3" style="color: var(--text-muted);">
+            For more information on how Google handles data, please review <a href="https://ai.google.dev/terms" target="_blank" rel="noopener" style="color: #6366f1; font-weight: 600;">Google's Gemini API Terms</a>.
+          </p>
+        </div>
+      </section>
+
+      <!-- API Key Security -->
+      <section>
+        <h2 class="text-xl font-bold mb-3" style="color: var(--text);">4. API Key Security</h2>
+        <div class="card">
+          <p class="text-sm leading-relaxed" style="color: var(--text-muted);">
+            Your Gemini API key is stored exclusively in your browser's localStorage. It is never sent to StudyGenie's servers, logged, or shared with any third party. The key is used solely to authenticate requests directly with Google's Gemini API. You can remove your API key at any time by clearing your browser's localStorage.
+          </p>
+        </div>
+      </section>
+
+      <!-- Analytics -->
+      <section>
+        <h2 class="text-xl font-bold mb-3" style="color: var(--text);">5. Analytics &amp; Advertising</h2>
+        <div class="card">
+          <p class="text-sm leading-relaxed mb-3" style="color: var(--text-muted);">
+            We may use privacy-friendly, anonymized analytics to understand general usage patterns (e.g., which tools are most popular, page visit counts). This data is aggregated and cannot be used to identify individual users.
+          </p>
+          <p class="text-sm leading-relaxed" style="color: var(--text-muted);">
+            We do not currently run any advertising on StudyGenie. If we introduce ads in the future, we will update this policy and use non-intrusive, privacy-respecting ad networks.
+          </p>
+        </div>
+      </section>
+
+      <!-- Children -->
+      <section>
+        <h2 class="text-xl font-bold mb-3" style="color: var(--text);">6. Children's Privacy</h2>
+        <div class="card">
+          <p class="text-sm leading-relaxed" style="color: var(--text-muted);">
+            StudyGenie is designed for students of all ages. Since we do not collect any personal information, there is no specific data handling concern regarding minors. However, younger students should use StudyGenie under parental or guardian supervision.
+          </p>
+        </div>
+      </section>
+
+      <!-- Changes -->
+      <section>
+        <h2 class="text-xl font-bold mb-3" style="color: var(--text);">7. Changes to This Policy</h2>
+        <div class="card">
+          <p class="text-sm leading-relaxed" style="color: var(--text-muted);">
+            We may update this Privacy Policy from time to time. Any changes will be reflected on this page with an updated "Last updated" date. We encourage you to review this page periodically.
+          </p>
+        </div>
+      </section>
+
+      <!-- Contact -->
+      <section>
+        <h2 class="text-xl font-bold mb-3" style="color: var(--text);">8. Contact Us</h2>
+        <div class="card">
+          <p class="text-sm leading-relaxed" style="color: var(--text-muted);">
+            If you have any questions or concerns about this Privacy Policy, please contact us at:
+          </p>
+          <div class="mt-3">
+            <a href="mailto:hello@studygenie.in" class="btn btn-outline btn-sm">
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+              hello@studygenie.in
+            </a>
+          </div>
+        </div>
+      </section>
+
+    </div>
+
+  </div>
+
+</Layout>

@@ -1,0 +1,143 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+<Layout title="About StudyGenie - AI Study Companion" description="Learn about StudyGenie, our mission to make studying easier with AI, and the technology behind our free study tools.">
+
+  <div class="max-w-3xl mx-auto px-4 py-12">
+
+    <!-- Back Link -->
+    <a href="/" class="inline-flex items-center gap-1 text-sm font-medium mb-8 no-underline" style="color: #6366f1;">
+      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+      Back to Home
+    </a>
+
+    <!-- Header -->
+    <h1 class="text-3xl md:text-4xl font-extrabold mb-4" style="color: var(--text);">About <span class="gradient-text">StudyGenie</span></h1>
+    <p class="text-lg mb-10 leading-relaxed" style="color: var(--text-muted);">
+      We're building the AI-powered study companion that every student deserves — free, fast, and insanely helpful.
+    </p>
+
+    <!-- Mission -->
+    <section class="mb-10">
+      <h2 class="text-xl font-bold mb-3" style="color: var(--text);">🎯 Our Mission</h2>
+      <div class="card">
+        <p class="text-sm leading-relaxed" style="color: var(--text);">
+          Studying shouldn't be hard. But too often, students spend hours re-reading textbooks, struggling with complex concepts, or watching hour-long videos just to understand one idea. We believe AI can change that.
+        </p>
+        <p class="text-sm leading-relaxed mt-3" style="color: var(--text-muted);">
+          StudyGenie's mission is to make learning faster, easier, and more effective for every student — regardless of their background, location, or budget. We use cutting-edge AI to turn any study material into instant summaries, flashcards, quizzes, and simple explanations.
+        </p>
+      </div>
+    </section>
+
+    <!-- What We Offer -->
+    <section class="mb-10">
+      <h2 class="text-xl font-bold mb-3" style="color: var(--text);">🛠 What We Offer</h2>
+      <div class="space-y-3">
+        <div class="card" style="padding: 1rem;">
+          <div class="flex items-start gap-3">
+            <span class="text-xl flex-shrink-0">📝</span>
+            <div>
+              <p class="text-sm font-semibold" style="color: var(--text);">AI Summarizer</p>
+              <p class="text-xs" style="color: var(--text-muted);">Paste any text and get a concise summary with key points and important terms.</p>
+            </div>
+          </div>
+        </div>
+        <div class="card" style="padding: 1rem;">
+          <div class="flex items-start gap-3">
+            <span class="text-xl flex-shrink-0">🃏</span>
+            <div>
+              <p class="text-sm font-semibold" style="color: var(--text);">Flashcard Generator</p>
+              <p class="text-xs" style="color: var(--text-muted);">Turn study material into interactive flashcards for active recall practice.</p>
+            </div>
+          </div>
+        </div>
+        <div class="card" style="padding: 1rem;">
+          <div class="flex items-start gap-3">
+            <span class="text-xl flex-shrink-0">🧪</span>
+            <div>
+              <p class="text-sm font-semibold" style="color: var(--text);">Quiz Generator</p>
+              <p class="text-xs" style="color: var(--text-muted);">Auto-generate multiple-choice questions to test your understanding before exams.</p>
+            </div>
+          </div>
+        </div>
+        <div class="card" style="padding: 1rem;">
+          <div class="flex items-start gap-3">
+            <span class="text-xl flex-shrink-0">💡</span>
+            <div>
+              <p class="text-sm font-semibold" style="color: var(--text);">Explain Like I'm 5</p>
+              <p class="text-xs" style="color: var(--text-muted);">Get simple explanations with analogies, examples, and fun facts for any concept.</p>
+            </div>
+          </div>
+        </div>
+        <div class="card" style="padding: 1rem;">
+          <div class="flex items-start gap-3">
+            <span class="text-xl flex-shrink-0">🎬</span>
+            <div>
+              <p class="text-sm font-semibold" style="color: var(--text);">YouTube Summarizer</p>
+              <p class="text-xs" style="color: var(--text-muted);">Extract key takeaways and timestamps from YouTube video transcripts.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Our Story -->
+    <section class="mb-10">
+      <h2 class="text-xl font-bold mb-3" style="color: var(--text);">💡 Our Story</h2>
+      <div class="card">
+        <p class="text-sm leading-relaxed" style="color: var(--text);">
+          StudyGenie was born out of a simple frustration — spending too many hours on studying without the right tools. As a developer and lifelong learner, I saw how powerful AI could be for education and decided to build something useful.
+        </p>
+        <p class="text-sm leading-relaxed mt-3" style="color: var(--text-muted);">
+          What started as a weekend project quickly grew into a full suite of AI-powered study tools. Built as a solo project with a passion for education and technology, StudyGenie is designed to be the study companion I always wished I had.
+        </p>
+        <p class="text-sm leading-relaxed mt-3" style="color: var(--text-muted);">
+          We're committed to keeping the core tools free and accessible. Every student should have access to smart study tools, not just those who can afford expensive subscriptions.
+        </p>
+      </div>
+    </section>
+
+    <!-- Tech Stack -->
+    <section class="mb-10">
+      <h2 class="text-xl font-bold mb-3" style="color: var(--text);">⚡ Built With</h2>
+      <div class="card">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div class="text-center">
+            <div class="w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-2 text-xl" style="background: rgba(99,102,241,0.1);">🤖</div>
+            <p class="text-sm font-semibold" style="color: var(--text);">Google Gemini AI</p>
+            <p class="text-xs" style="color: var(--text-muted);">Advanced AI model for smart text analysis and generation</p>
+          </div>
+          <div class="text-center">
+            <div class="w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-2 text-xl" style="background: rgba(16,185,129,0.1);">🚀</div>
+            <p class="text-sm font-semibold" style="color: var(--text);">Astro</p>
+            <p class="text-xs" style="color: var(--text-muted);">Fast, modern web framework for blazing performance</p>
+          </div>
+          <div class="text-center">
+            <div class="w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-2 text-xl" style="background: rgba(245,158,11,0.1);">☁️</div>
+            <p class="text-sm font-semibold" style="color: var(--text);">Cloudflare</p>
+            <p class="text-xs" style="color: var(--text-muted);">Global edge deployment for fast load times worldwide</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Contact -->
+    <section class="mb-10">
+      <h2 class="text-xl font-bold mb-3" style="color: var(--text);">📬 Get in Touch</h2>
+      <div class="card">
+        <p class="text-sm leading-relaxed" style="color: var(--text-muted);">
+          Have questions, feedback, or feature requests? We'd love to hear from you!
+        </p>
+        <div class="mt-4">
+          <a href="mailto:hello@studygenie.in" class="btn btn-brand btn-sm">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+            hello@studygenie.in
+          </a>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+</Layout>

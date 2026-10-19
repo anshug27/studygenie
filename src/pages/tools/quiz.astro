@@ -1,0 +1,494 @@
+---
+import Layout from '../../layouts/Layout.astro';
+---
+<Layout title="AI Quiz Generator - StudyGenie" description="Test yourself with AI-generated multiple choice questions. Paste any study material and get an instant quiz with explanations." isTool={true}>
+
+  <div class="tool-container">
+    <div class="tool-header">
+      <h1>&#x1F9EA; AI Quiz Generator</h1>
+      <p>Test yourself with AI-generated MCQ questions</p>
+    </div>
+
+    <!-- Input Area -->
+    <div class="tool-input-area">
+      <textarea id="input-text" class="input" placeholder="Paste your study material, lecture notes, textbook chapter, or article here..." style="min-height: 200px;"></textarea>
+      <div class="flex items-center justify-between mt-3 flex-wrap gap-2">
+        <span id="char-count" class="text-xs" style="color: var(--text-muted);">0 / 8,000 characters</span>
+        <div class="flex items-center gap-3">
+          <div class="flex items-center gap-2">
+            <label for="question-count" class="text-sm font-medium" style="color: var(--text-muted);">Questions:</label>
+            <select id="question-count" class="input" style="width: auto; padding: 0.5rem 0.75rem; font-size: 0.8125rem;">
+              <option value="3">3</option>
+              <option value="5" selected>5</option>
+              <option value="8">8</option>
+              <option value="10">10</option>
+            </select>
+          </div>
+          <button id="clear-btn" class="btn btn-ghost btn-sm">Clear</button>
+          <button id="generate-btn" class="btn btn-brand">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+            Generate Quiz
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    <div id="loading" class="hidden text-center py-12">
+      <div class="spinner spinner-dark mx-auto mb-3" style="width: 2rem; height: 2rem;"></div>
+      <p class="text-sm" style="color: var(--text-muted);">AI is creating your quiz...</p>
+    </div>
+
+    <!-- Error State -->
+    <div id="error-msg" class="hidden card mb-4" style="border-color: #ef4444; border-left: 4px solid #ef4444; padding: 1rem;">
+      <p class="text-sm font-medium" style="color: #ef4444;" id="error-text">Something went wrong</p>
+    </div>
+
+    <!-- Quiz Interface -->
+    <div id="quiz-area" class="hidden">
+
+      <!-- Score Tracker & Progress -->
+      <div class="card mb-4" style="padding: 1rem;">
+        <div class="flex items-center justify-between mb-2">
+          <span id="score-tracker" class="text-sm font-semibold" style="color: var(--text);">0/0 correct</span>
+          <span id="question-progress" class="text-sm font-medium" style="color: var(--text-muted);">Question 1 of 5</span>
+        </div>
+        <div style="width: 100%; height: 6px; background: var(--border); border-radius: 9999px; overflow: hidden;">
+          <div id="progress-fill" style="height: 100%; width: 0%; background: linear-gradient(135deg, #6366f1, #818cf8); border-radius: 9999px; transition: width 0.4s ease;"></div>
+        </div>
+      </div>
+
+      <!-- Question Card -->
+      <div id="question-card" class="card mb-4" style="padding: 1.5rem;">
+        <div class="flex items-start gap-3 mb-4">
+          <span id="question-number" class="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold" style="background: linear-gradient(135deg, #6366f1, #818cf8); color: #fff;">1</span>
+          <p id="question-text" class="text-base font-medium" style="color: var(--text); line-height: 1.6;"></p>
+        </div>
+
+        <!-- Options -->
+        <div id="options-container" class="space-y-2 mb-4"></div>
+
+        <!-- Explanation (shown after answer) -->
+        <div id="explanation-area" class="hidden" style="background: var(--bg-alt); border-radius: 0.75rem; padding: 1rem; margin-top: 1rem;">
+          <p class="text-xs font-semibold mb-1" style="color: #6366f1;">Explanation</p>
+          <p id="explanation-text" class="text-sm" style="color: var(--text-muted); line-height: 1.6;"></p>
+        </div>
+
+        <!-- Next Button -->
+        <div id="next-area" class="hidden flex justify-end mt-4">
+          <button id="next-question-btn" class="btn btn-brand btn-sm">
+            Next Question
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Score Card (shown after quiz) -->
+    <div id="score-card" class="hidden">
+      <div class="card text-center" style="padding: 2.5rem 1.5rem;">
+        <div id="score-emoji" class="text-5xl mb-3">&#x1F389;</div>
+        <h2 class="text-2xl font-bold mb-1" style="color: var(--text);">Quiz Complete!</h2>
+        <p id="score-subtitle" class="text-sm mb-6" style="color: var(--text-muted);">Here's how you did</p>
+
+        <!-- Score Circle -->
+        <div class="flex justify-center mb-6">
+          <div class="flex flex-col items-center justify-center w-32 h-32 rounded-full" style="border: 4px solid var(--border);">
+            <span id="score-percentage" class="text-3xl font-bold" style="color: #6366f1;">0%</span>
+            <span id="score-fraction" class="text-sm" style="color: var(--text-muted);">0/0</span>
+          </div>
+        </div>
+
+        <!-- Grade -->
+        <div class="flex justify-center mb-6">
+          <span id="score-grade" class="px-4 py-2 rounded-full text-lg font-bold">A</span>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex flex-wrap justify-center gap-2">
+          <button id="try-again-btn" class="btn btn-brand">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+            Try Again
+          </button>
+          <button id="new-quiz-btn" class="btn btn-outline">
+            &#x1F9EA; Generate New Quiz
+          </button>
+          <a href="/tools/flashcards" class="btn btn-outline">
+            &#x1F0CF; Make Flashcards
+          </a>
+        </div>
+      </div>
+
+      <!-- Review Answers -->
+      <div class="result-section mt-6">
+        <h3>&#x1F4CB; Review Answers</h3>
+        <div id="review-list" class="space-y-3"></div>
+      </div>
+    </div>
+
+    <!-- SEO Content -->
+    <div class="mt-12 space-y-6" style="color: var(--text-muted);">
+      <h2 class="text-xl font-bold" style="color: var(--text);">How the AI Quiz Generator Works</h2>
+      <p class="text-sm leading-relaxed">Our AI-powered quiz generator uses Google's Gemini model to analyze your study material and create challenging multiple-choice questions that test real understanding. Perfect for self-assessment, exam preparation, and active recall practice.</p>
+      <ul class="text-sm space-y-2">
+        <li><strong style="color: var(--text);">Smart Questions</strong> - AI generates questions that test comprehension, not just memorization</li>
+        <li><strong style="color: var(--text);">Instant Feedback</strong> - See immediately if your answer is correct with color-coded responses</li>
+        <li><strong style="color: var(--text);">Detailed Explanations</strong> - Understand why each answer is correct to deepen your learning</li>
+        <li><strong style="color: var(--text);">Score Tracking</strong> - Track your performance with percentage scores and letter grades</li>
+        <li><strong style="color: var(--text);">Flexible Length</strong> - Choose 3, 5, 8, or 10 questions depending on your study time</li>
+      </ul>
+      <h3 class="text-lg font-bold" style="color: var(--text);">Why Active Recall Works</h3>
+      <p class="text-sm leading-relaxed">Research shows that testing yourself is one of the most effective study strategies. Active recall strengthens neural pathways and helps transfer information from short-term to long-term memory. Our quiz generator makes this process effortless by turning any content into an interactive assessment.</p>
+    </div>
+  </div>
+
+</Layout>
+
+<script>
+  import { callGemini, quizPrompt, parseJSON, getApiKey, hasApiKey, canUseFreeTier, incrementUsage, getRemainingUses } from '../../utils/ai';
+
+  function init() {
+    const input = document.getElementById('input-text') as HTMLTextAreaElement;
+    const charCount = document.getElementById('char-count')!;
+    const questionCountSelect = document.getElementById('question-count') as HTMLSelectElement;
+    const generateBtn = document.getElementById('generate-btn')!;
+    const clearBtn = document.getElementById('clear-btn')!;
+    const loading = document.getElementById('loading')!;
+    const errorMsg = document.getElementById('error-msg')!;
+    const errorText = document.getElementById('error-text')!;
+    const quizArea = document.getElementById('quiz-area')!;
+    const scoreCard = document.getElementById('score-card')!;
+    const scoreTracker = document.getElementById('score-tracker')!;
+    const questionProgress = document.getElementById('question-progress')!;
+    const progressFill = document.getElementById('progress-fill')!;
+    const questionNumber = document.getElementById('question-number')!;
+    const questionText = document.getElementById('question-text')!;
+    const optionsContainer = document.getElementById('options-container')!;
+    const explanationArea = document.getElementById('explanation-area')!;
+    const explanationText = document.getElementById('explanation-text')!;
+    const nextArea = document.getElementById('next-area')!;
+    const nextQuestionBtn = document.getElementById('next-question-btn')!;
+    const tryAgainBtn = document.getElementById('try-again-btn')!;
+    const newQuizBtn = document.getElementById('new-quiz-btn')!;
+
+    interface Question {
+      question: string;
+      options: string[];
+      correctIndex: number;
+      explanation: string;
+    }
+
+    let questions: Question[] = [];
+    let currentQuestion = 0;
+    let score = 0;
+    let answered = false;
+    let userAnswers: (number | null)[] = [];
+
+    // Restore text from sessionStorage
+    const saved = sessionStorage.getItem('sg_current_text');
+    if (saved) input.value = saved;
+
+    // Char count
+    input.addEventListener('input', () => {
+      const len = input.value.length;
+      charCount.textContent = `${len.toLocaleString()} / 8,000 characters`;
+      charCount.style.color = len > 8000 ? '#ef4444' : 'var(--text-muted)';
+    });
+    input.dispatchEvent(new Event('input'));
+
+    // Clear
+    clearBtn.addEventListener('click', () => {
+      input.value = '';
+      quizArea.classList.add('hidden');
+      scoreCard.classList.add('hidden');
+      errorMsg.classList.add('hidden');
+      input.dispatchEvent(new Event('input'));
+    });
+
+    function showQuestion() {
+      if (currentQuestion >= questions.length) {
+        showScoreCard();
+        return;
+      }
+
+      const q = questions[currentQuestion];
+      answered = false;
+
+      // Update progress
+      questionNumber.textContent = String(currentQuestion + 1);
+      questionText.textContent = q.question;
+      questionProgress.textContent = `Question ${currentQuestion + 1} of ${questions.length}`;
+      progressFill.style.width = `${((currentQuestion) / questions.length) * 100}%`;
+      scoreTracker.textContent = `${score}/${currentQuestion} correct`;
+
+      // Hide explanation & next
+      explanationArea.classList.add('hidden');
+      nextArea.classList.add('hidden');
+
+      // Render options
+      const letters = ['A', 'B', 'C', 'D'];
+      optionsContainer.innerHTML = q.options.map((opt, i) =>
+        `<button class="quiz-option" data-index="${i}">
+          <span class="option-letter">${letters[i]}</span>
+          <span style="color: var(--text);">${escapeHtml(opt)}</span>
+        </button>`
+      ).join('');
+
+      // Add click listeners
+      optionsContainer.querySelectorAll('.quiz-option').forEach(btn => {
+        btn.addEventListener('click', () => handleAnswer(parseInt((btn as HTMLElement).dataset.index!)));
+      });
+    }
+
+    function handleAnswer(selectedIndex: number) {
+      if (answered) return;
+      answered = true;
+
+      const q = questions[currentQuestion];
+      userAnswers[currentQuestion] = selectedIndex;
+
+      const options = optionsContainer.querySelectorAll('.quiz-option');
+
+      // Disable all options
+      options.forEach(opt => {
+        (opt as HTMLButtonElement).style.pointerEvents = 'none';
+      });
+
+      // Mark selected
+      if (selectedIndex === q.correctIndex) {
+        score++;
+        options[selectedIndex].classList.add('correct');
+      } else {
+        options[selectedIndex].classList.add('wrong');
+        options[q.correctIndex].classList.add('correct');
+      }
+
+      // Update score tracker
+      scoreTracker.textContent = `${score}/${currentQuestion + 1} correct`;
+
+      // Show explanation
+      explanationText.textContent = q.explanation;
+      explanationArea.classList.remove('hidden');
+
+      // Show next button
+      if (currentQuestion < questions.length - 1) {
+        nextQuestionBtn.textContent = 'Next Question';
+      } else {
+        nextQuestionBtn.textContent = 'See Results';
+      }
+      nextArea.classList.remove('hidden');
+    }
+
+    nextQuestionBtn.addEventListener('click', () => {
+      currentQuestion++;
+      if (currentQuestion >= questions.length) {
+        showScoreCard();
+      } else {
+        showQuestion();
+      }
+    });
+
+    function showScoreCard() {
+      quizArea.classList.add('hidden');
+      progressFill.style.width = '100%';
+
+      const percentage = Math.round((score / questions.length) * 100);
+      let grade = 'F';
+      let gradeStyle = 'background: rgba(239,68,68,0.1); color: #ef4444;';
+      let emoji = '&#x1F614;';
+
+      if (percentage >= 90) {
+        grade = 'A';
+        gradeStyle = 'background: rgba(16,185,129,0.1); color: #10b981;';
+        emoji = '&#x1F929;';
+      } else if (percentage >= 80) {
+        grade = 'B';
+        gradeStyle = 'background: rgba(16,185,129,0.1); color: #10b981;';
+        emoji = '&#x1F389;';
+      } else if (percentage >= 70) {
+        grade = 'C';
+        gradeStyle = 'background: rgba(245,158,11,0.1); color: #f59e0b;';
+        emoji = '&#x1F44D;';
+      } else if (percentage >= 60) {
+        grade = 'D';
+        gradeStyle = 'background: rgba(245,158,11,0.1); color: #f59e0b;';
+        emoji = '&#x1F914;';
+      } else {
+        grade = 'F';
+        gradeStyle = 'background: rgba(239,68,68,0.1); color: #ef4444;';
+        emoji = '&#x1F4AA;';
+      }
+
+      document.getElementById('score-emoji')!.innerHTML = emoji;
+      document.getElementById('score-percentage')!.textContent = `${percentage}%`;
+      document.getElementById('score-fraction')!.textContent = `${score}/${questions.length}`;
+      const gradeEl = document.getElementById('score-grade')!;
+      gradeEl.textContent = grade;
+      gradeEl.setAttribute('style', gradeStyle + ' padding: 0.5rem 1.5rem; border-radius: 9999px; font-size: 1.125rem; font-weight: 700;');
+
+      const subtitles: Record<string, string> = {
+        A: 'Outstanding! You really know this material!',
+        B: 'Great job! You have a solid understanding!',
+        C: 'Good effort! Review a few topics to improve.',
+        D: 'Keep studying! You\'re getting there.',
+        F: 'Don\'t give up! Try reviewing the material and retake the quiz.',
+      };
+      document.getElementById('score-subtitle')!.textContent = subtitles[grade];
+
+      // Update score circle border color
+      const circleEl = document.querySelector('#score-card .w-32') as HTMLElement;
+      if (circleEl) {
+        const borderColor = percentage >= 70 ? '#10b981' : percentage >= 60 ? '#f59e0b' : '#ef4444';
+        circleEl.style.borderColor = borderColor;
+      }
+
+      // Render review list
+      const letters = ['A', 'B', 'C', 'D'];
+      const reviewList = document.getElementById('review-list')!;
+      reviewList.innerHTML = questions.map((q, i) => {
+        const userAns = userAnswers[i];
+        const isCorrect = userAns === q.correctIndex;
+        const statusIcon = isCorrect ? '&#x2705;' : '&#x274C;';
+        const borderStyle = isCorrect ? 'border-color: #10b981;' : 'border-color: #ef4444;';
+
+        return `<div class="card" style="padding: 1rem; ${borderStyle}">
+          <div class="flex items-start gap-2 mb-2">
+            <span class="text-base">${statusIcon}</span>
+            <p class="text-sm font-medium" style="color: var(--text);">${escapeHtml(q.question)}</p>
+          </div>
+          <div class="text-sm ml-7" style="color: var(--text-muted);">
+            ${userAns !== null && userAns !== q.correctIndex ? `<p style="color: #ef4444;">Your answer: ${letters[userAns]}. ${escapeHtml(q.options[userAns])}</p>` : ''}
+            <p style="color: #10b981;">Correct answer: ${letters[q.correctIndex]}. ${escapeHtml(q.options[q.correctIndex])}</p>
+            <p class="mt-1" style="color: var(--text-muted);"><em>${escapeHtml(q.explanation)}</em></p>
+          </div>
+        </div>`;
+      }).join('');
+
+      scoreCard.classList.remove('hidden');
+      scoreCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    // Try Again - same questions, reset score
+    tryAgainBtn.addEventListener('click', () => {
+      currentQuestion = 0;
+      score = 0;
+      answered = false;
+      userAnswers = new Array(questions.length).fill(null);
+      scoreCard.classList.add('hidden');
+      quizArea.classList.remove('hidden');
+      showQuestion();
+      quizArea.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+
+    // New Quiz - regenerate
+    newQuizBtn.addEventListener('click', () => {
+      scoreCard.classList.add('hidden');
+      quizArea.classList.add('hidden');
+      generateBtn.click();
+    });
+
+    // Generate quiz
+    generateBtn.addEventListener('click', async () => {
+      const text = input.value.trim();
+      if (!text) {
+        errorText.textContent = 'Please paste some text first.';
+        errorMsg.classList.remove('hidden');
+        return;
+      }
+      if (text.length < 50) {
+        errorText.textContent = 'Please paste at least 50 characters for a good quiz.';
+        errorMsg.classList.remove('hidden');
+        return;
+      }
+      if (!hasApiKey()) {
+        document.getElementById('api-key-modal')?.classList.remove('hidden');
+        return;
+      }
+      if (!canUseFreeTier()) {
+        errorText.textContent = "You've used all 5 free generations today. Come back tomorrow or upgrade to Pro!";
+        errorMsg.classList.remove('hidden');
+        return;
+      }
+
+      // Save text for other tools
+      sessionStorage.setItem('sg_current_text', text);
+
+      const count = parseInt(questionCountSelect.value);
+
+      // Show loading
+      errorMsg.classList.add('hidden');
+      quizArea.classList.add('hidden');
+      scoreCard.classList.add('hidden');
+      loading.classList.remove('hidden');
+      generateBtn.disabled = true;
+      generateBtn.innerHTML = '<span class="spinner"></span> Generating...';
+
+      const response = await callGemini(quizPrompt(text, count), getApiKey());
+
+      loading.classList.add('hidden');
+      generateBtn.disabled = false;
+      generateBtn.innerHTML = '<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg> Generate Quiz';
+
+      if (response.error) {
+        errorText.textContent = response.error;
+        errorMsg.classList.remove('hidden');
+        return;
+      }
+
+      const data = parseJSON(response.text);
+      if (!data || !data.questions || !Array.isArray(data.questions) || data.questions.length === 0) {
+        errorText.textContent = 'Failed to parse AI response. Please try again.';
+        errorMsg.classList.remove('hidden');
+        return;
+      }
+
+      // Track usage
+      incrementUsage();
+      const remaining = getRemainingUses();
+      const usageTextEl = document.getElementById('usage-text');
+      const usageFillEl = document.getElementById('usage-fill');
+      if (usageTextEl) usageTextEl.textContent = `${remaining}/5 free`;
+      if (usageFillEl) usageFillEl.style.width = `${(remaining / 5) * 100}%`;
+
+      // Initialize quiz state
+      questions = data.questions;
+      currentQuestion = 0;
+      score = 0;
+      answered = false;
+      userAnswers = new Array(questions.length).fill(null);
+
+      // Show quiz
+      quizArea.classList.remove('hidden');
+      showQuestion();
+      quizArea.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+
+    // Keyboard shortcut: 1-4 for options, Enter for next
+    document.addEventListener('keydown', (e) => {
+      if (quizArea.classList.contains('hidden')) return;
+      const active = document.activeElement;
+      if (active && (active.tagName === 'TEXTAREA' || active.tagName === 'INPUT' || active.tagName === 'SELECT')) return;
+
+      const keyNum = parseInt(e.key);
+      if (keyNum >= 1 && keyNum <= 4 && !answered) {
+        handleAnswer(keyNum - 1);
+      } else if ((e.key === 'Enter' || e.key === 'ArrowRight') && answered) {
+        currentQuestion++;
+        if (currentQuestion >= questions.length) {
+          showScoreCard();
+        } else {
+          showQuestion();
+        }
+      }
+    });
+  }
+
+  function escapeHtml(str: string): string {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  document.addEventListener('DOMContentLoaded', init);
+  document.addEventListener('astro:page-load', init);
+</script>

@@ -1,0 +1,303 @@
+---
+import Layout from '../../layouts/Layout.astro';
+---
+<Layout title="YouTube Video Summarizer - StudyGenie" description="Get key takeaways, summaries, and timestamps from any YouTube video. Paste a transcript and let AI do the rest." isTool={true}>
+
+  <div class="tool-container">
+    <div class="tool-header">
+      <h1>🎬 YouTube Summarizer</h1>
+      <p>Get key takeaways from any YouTube video</p>
+    </div>
+
+    <!-- Input Area -->
+    <div class="tool-input-area">
+      <input id="url-input" type="url" class="input mb-3" placeholder="Paste YouTube video URL..." />
+
+      <!-- Helpful Info Card -->
+      <div class="card mb-3" style="padding: 1rem; border-left: 4px solid #f59e0b;">
+        <div class="flex items-start gap-2">
+          <span class="text-lg flex-shrink-0">💡</span>
+          <div>
+            <p class="text-sm font-semibold mb-1" style="color: var(--text);">How to get the transcript</p>
+            <p class="text-xs leading-relaxed" style="color: var(--text-muted);">For the best experience, copy the video transcript from YouTube: click the <strong style="color: var(--text);">three dots (&middot;&middot;&middot;)</strong> below the video &rarr; <strong style="color: var(--text);">"Show transcript"</strong> &rarr; select all text and paste it below.</p>
+          </div>
+        </div>
+      </div>
+
+      <textarea id="transcript-input" class="input" placeholder="Paste the YouTube video transcript here..." style="min-height: 180px;"></textarea>
+
+      <div class="flex items-center justify-between mt-3">
+        <span id="char-count" class="text-xs" style="color: var(--text-muted);">0 / 10,000 characters</span>
+        <div class="flex gap-2">
+          <button id="clear-btn" class="btn btn-ghost btn-sm">Clear</button>
+          <button id="summarize-btn" class="btn btn-brand">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            Summarize Video
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    <div id="loading" class="hidden text-center py-12">
+      <div class="spinner spinner-dark mx-auto mb-3" style="width: 2rem; height: 2rem;"></div>
+      <p class="text-sm" style="color: var(--text-muted);">Analyzing the video transcript...</p>
+    </div>
+
+    <!-- Error State -->
+    <div id="error-msg" class="hidden card mb-4" style="border-color: #ef4444; border-left: 4px solid #ef4444; padding: 1rem;">
+      <p class="text-sm font-medium" style="color: #ef4444;" id="error-text">Something went wrong</p>
+    </div>
+
+    <!-- Results -->
+    <div id="results" class="hidden">
+
+      <!-- Video Title -->
+      <div class="result-section">
+        <h3>
+          <svg class="w-5 h-5" style="color: #ef4444;" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+          Video Topic
+        </h3>
+        <div class="card">
+          <p id="video-title" class="text-base font-semibold" style="color: var(--text);"></p>
+        </div>
+      </div>
+
+      <!-- Summary -->
+      <div class="result-section">
+        <h3>
+          <svg class="w-5 h-5" style="color: #6366f1;" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          Summary
+        </h3>
+        <div class="card">
+          <p id="summary-text" class="text-sm leading-relaxed" style="color: var(--text);"></p>
+        </div>
+      </div>
+
+      <!-- Key Points -->
+      <div class="result-section">
+        <h3>
+          <svg class="w-5 h-5" style="color: #10b981;" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+          Key Points
+        </h3>
+        <div class="card">
+          <ul id="key-points" class="space-y-2"></ul>
+        </div>
+      </div>
+
+      <!-- Timestamps -->
+      <div id="timestamps-section" class="result-section">
+        <h3>
+          <svg class="w-5 h-5" style="color: #f59e0b;" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          Timestamps
+        </h3>
+        <div class="card">
+          <div id="timestamps-list" class="space-y-2"></div>
+        </div>
+      </div>
+
+      <!-- Action Items -->
+      <div class="result-section">
+        <h3>
+          <svg class="w-5 h-5" style="color: #ec4899;" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+          What to Study Next
+        </h3>
+        <div class="card">
+          <ul id="action-items" class="space-y-2"></ul>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex flex-wrap gap-2 mb-6">
+        <button id="copy-btn" class="btn btn-outline btn-sm">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+          Copy Summary
+        </button>
+        <a href="/tools/flashcards" class="btn btn-outline btn-sm">
+          🃏 Make Flashcards
+        </a>
+        <button id="reset-btn" class="btn btn-outline btn-sm">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+          Summarize Another Video
+        </button>
+      </div>
+    </div>
+
+    <!-- SEO Content -->
+    <div class="mt-12 space-y-6" style="color: var(--text-muted);">
+      <h2 class="text-xl font-bold" style="color: var(--text);">Learn Faster from YouTube Videos</h2>
+      <p class="text-sm leading-relaxed">YouTube is one of the biggest learning platforms in the world, but watching long videos takes time. Our AI-powered YouTube Summarizer helps you extract the most valuable insights from any video in seconds. Perfect for:</p>
+      <ul class="text-sm space-y-2">
+        <li><strong style="color: var(--text);">Lecture Videos</strong> - Get quick notes from university lectures and online courses</li>
+        <li><strong style="color: var(--text);">Tutorial Videos</strong> - Extract step-by-step instructions without replaying</li>
+        <li><strong style="color: var(--text);">Documentary Content</strong> - Summarize key facts and findings</li>
+        <li><strong style="color: var(--text);">Exam Prep Videos</strong> - Get concise revision notes from coaching channels</li>
+      </ul>
+      <p class="text-sm leading-relaxed">Simply paste the video transcript and our AI will generate a clear summary, bullet-pointed key takeaways, timestamps for quick navigation, and suggested topics to study next. Works great with educational channels, online courses, and academic content.</p>
+    </div>
+  </div>
+
+</Layout>
+
+<script>
+  import { callGemini, youtubePrompt, parseJSON, getApiKey, hasApiKey, canUseFreeTier, incrementUsage, getRemainingUses } from '../../utils/ai';
+
+  function init() {
+    const urlInput = document.getElementById('url-input') as HTMLInputElement;
+    const transcriptInput = document.getElementById('transcript-input') as HTMLTextAreaElement;
+    const charCount = document.getElementById('char-count')!;
+    const summarizeBtn = document.getElementById('summarize-btn')!;
+    const clearBtn = document.getElementById('clear-btn')!;
+    const loading = document.getElementById('loading')!;
+    const errorMsg = document.getElementById('error-msg')!;
+    const errorText = document.getElementById('error-text')!;
+    const results = document.getElementById('results')!;
+    const copyBtn = document.getElementById('copy-btn')!;
+    const resetBtn = document.getElementById('reset-btn')!;
+
+    // Char count
+    transcriptInput.addEventListener('input', () => {
+      const len = transcriptInput.value.length;
+      charCount.textContent = `${len.toLocaleString()} / 10,000 characters`;
+      charCount.style.color = len > 10000 ? '#ef4444' : 'var(--text-muted)';
+    });
+    transcriptInput.dispatchEvent(new Event('input'));
+
+    // Clear
+    clearBtn.addEventListener('click', () => {
+      urlInput.value = '';
+      transcriptInput.value = '';
+      results.classList.add('hidden');
+      errorMsg.classList.add('hidden');
+      transcriptInput.dispatchEvent(new Event('input'));
+    });
+
+    // Reset
+    resetBtn.addEventListener('click', () => {
+      urlInput.value = '';
+      transcriptInput.value = '';
+      results.classList.add('hidden');
+      errorMsg.classList.add('hidden');
+      transcriptInput.dispatchEvent(new Event('input'));
+      urlInput.focus();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+
+    // Copy
+    copyBtn.addEventListener('click', () => {
+      const title = document.getElementById('video-title')?.textContent || '';
+      const summary = document.getElementById('summary-text')?.textContent || '';
+      const points = Array.from(document.querySelectorAll('#key-points li')).map(li => '• ' + li.textContent?.trim()).join('\n');
+      const full = `${title}\n\nSummary:\n${summary}\n\nKey Points:\n${points}`;
+      navigator.clipboard.writeText(full).then(() => {
+        copyBtn.textContent = 'Copied!';
+        setTimeout(() => {
+          copyBtn.innerHTML = '<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg> Copy Summary';
+        }, 2000);
+      });
+    });
+
+    // Summarize
+    summarizeBtn.addEventListener('click', async () => {
+      const transcript = transcriptInput.value.trim();
+      if (!transcript) {
+        errorText.textContent = 'Please paste the video transcript first. Click the info box above for instructions on how to get it.';
+        errorMsg.classList.remove('hidden');
+        return;
+      }
+      if (transcript.length < 100) {
+        errorText.textContent = 'The transcript seems too short. Please paste at least 100 characters for a good summary.';
+        errorMsg.classList.remove('hidden');
+        return;
+      }
+      if (!hasApiKey()) {
+        document.getElementById('api-key-modal')?.classList.remove('hidden');
+        return;
+      }
+      if (!canUseFreeTier()) {
+        errorText.textContent = 'You\'ve used all 5 free generations today. Come back tomorrow or upgrade to Pro!';
+        errorMsg.classList.remove('hidden');
+        return;
+      }
+
+      // Save transcript for other tools
+      sessionStorage.setItem('sg_current_text', transcript);
+
+      // Show loading
+      errorMsg.classList.add('hidden');
+      results.classList.add('hidden');
+      loading.classList.remove('hidden');
+      summarizeBtn.disabled = true;
+      summarizeBtn.innerHTML = '<span class="spinner"></span> Analyzing...';
+
+      const response = await callGemini(youtubePrompt(transcript), getApiKey());
+
+      loading.classList.add('hidden');
+      summarizeBtn.disabled = false;
+      summarizeBtn.innerHTML = '<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg> Summarize Video';
+
+      if (response.error) {
+        errorText.textContent = response.error;
+        errorMsg.classList.remove('hidden');
+        return;
+      }
+
+      const data = parseJSON(response.text);
+      if (!data) {
+        errorText.textContent = 'Failed to parse AI response. Please try again.';
+        errorMsg.classList.remove('hidden');
+        return;
+      }
+
+      // Track usage
+      incrementUsage();
+      const remaining = getRemainingUses();
+      const usageTextEl = document.getElementById('usage-text');
+      const usageFill = document.getElementById('usage-fill');
+      if (usageTextEl) usageTextEl.textContent = `${remaining}/5 free`;
+      if (usageFill) usageFill.style.width = `${(remaining / 5) * 100}%`;
+
+      // Render results
+      document.getElementById('video-title')!.textContent = data.title || 'Video Summary';
+      document.getElementById('summary-text')!.textContent = data.summary || 'No summary available.';
+
+      const keyPointsList = document.getElementById('key-points')!;
+      keyPointsList.innerHTML = (data.keyPoints || []).map((p: string) =>
+        `<li class="flex items-start gap-2 text-sm" style="color: var(--text); padding: 0.5rem 0; border-bottom: 1px solid var(--border);">
+          <span style="color: #10b981; flex-shrink: 0;">●</span>
+          <span>${p}</span>
+        </li>`
+      ).join('');
+
+      // Timestamps
+      const timestampsSection = document.getElementById('timestamps-section')!;
+      const timestampsList = document.getElementById('timestamps-list')!;
+      if (data.timestamps && data.timestamps.length > 0) {
+        timestampsSection.classList.remove('hidden');
+        timestampsList.innerHTML = data.timestamps.map((t: any) =>
+          `<div class="flex items-center gap-3 text-sm" style="padding: 0.5rem 0; border-bottom: 1px solid var(--border);">
+            <span class="flex-shrink-0 px-2 py-0.5 rounded text-xs font-mono font-semibold" style="background: rgba(245,158,11,0.1); color: #f59e0b;">${t.time || '—'}</span>
+            <span style="color: var(--text);">${t.topic || ''}</span>
+          </div>`
+        ).join('');
+      } else {
+        timestampsSection.classList.add('hidden');
+      }
+
+      // Action items
+      const actionItems = document.getElementById('action-items')!;
+      actionItems.innerHTML = (data.actionItems || []).map((item: string) =>
+        `<li class="flex items-start gap-2 text-sm" style="color: var(--text); padding: 0.5rem 0; border-bottom: 1px solid var(--border);">
+          <span style="color: #ec4899; flex-shrink: 0;">→</span>
+          <span>${item}</span>
+        </li>`
+      ).join('');
+
+      results.classList.remove('hidden');
+      results.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', init);
+  document.addEventListener('astro:page-load', init);
+</script>

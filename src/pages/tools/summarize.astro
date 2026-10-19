@@ -1,0 +1,239 @@
+---
+import Layout from '../../layouts/Layout.astro';
+---
+<Layout title="AI Text Summarizer - StudyGenie" description="Paste any text and get an instant AI summary with key points, important terms, and difficulty level." isTool={true}>
+
+  <div class="tool-container">
+    <div class="tool-header">
+      <h1>📝 AI Summarizer</h1>
+      <p>Paste any text, article, or notes. Get a smart summary instantly.</p>
+    </div>
+
+    <!-- Input Area -->
+    <div class="tool-input-area">
+      <textarea id="input-text" class="input" placeholder="Paste your study material, article, textbook chapter, or notes here..." style="min-height: 200px;"></textarea>
+      <div class="flex items-center justify-between mt-3">
+        <span id="char-count" class="text-xs" style="color: var(--text-muted);">0 / 8,000 characters</span>
+        <div class="flex gap-2">
+          <button id="clear-btn" class="btn btn-ghost btn-sm">Clear</button>
+          <button id="summarize-btn" class="btn btn-brand">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+            Summarize
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    <div id="loading" class="hidden text-center py-12">
+      <div class="spinner spinner-dark mx-auto mb-3" style="width: 2rem; height: 2rem;"></div>
+      <p class="text-sm" style="color: var(--text-muted);">AI is analyzing your text...</p>
+    </div>
+
+    <!-- Error State -->
+    <div id="error-msg" class="hidden card mb-4" style="border-color: #ef4444; border-left: 4px solid #ef4444; padding: 1rem;">
+      <p class="text-sm font-medium" style="color: #ef4444;" id="error-text">Something went wrong</p>
+    </div>
+
+    <!-- Results -->
+    <div id="results" class="hidden">
+
+      <!-- Summary -->
+      <div class="result-section">
+        <h3>📋 Summary</h3>
+        <div class="card">
+          <p id="summary-text" class="text-sm leading-relaxed" style="color: var(--text);"></p>
+        </div>
+      </div>
+
+      <!-- Key Points -->
+      <div class="result-section">
+        <h3>🎯 Key Points</h3>
+        <div class="card">
+          <ul id="key-points" class="space-y-2"></ul>
+        </div>
+      </div>
+
+      <!-- Important Terms -->
+      <div class="result-section">
+        <h3>📖 Important Terms</h3>
+        <div id="terms-list" class="grid gap-2"></div>
+      </div>
+
+      <!-- Difficulty Badge -->
+      <div class="flex items-center gap-3 mb-6">
+        <span class="text-sm font-medium" style="color: var(--text-muted);">Difficulty:</span>
+        <span id="difficulty-badge" class="px-3 py-1 rounded-full text-xs font-semibold"></span>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex flex-wrap gap-2 mb-6">
+        <button id="copy-btn" class="btn btn-outline btn-sm">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+          Copy Summary
+        </button>
+        <a id="flashcards-link" href="/tools/flashcards" class="btn btn-outline btn-sm">
+          🃏 Make Flashcards
+        </a>
+        <a id="quiz-link" href="/tools/quiz" class="btn btn-outline btn-sm">
+          🧪 Generate Quiz
+        </a>
+      </div>
+    </div>
+
+    <!-- SEO Content -->
+    <div class="mt-12 space-y-6" style="color: var(--text-muted);">
+      <h2 class="text-xl font-bold" style="color: var(--text);">How the AI Summarizer Works</h2>
+      <p class="text-sm leading-relaxed">Our AI-powered summarizer uses Google's Gemini model to analyze your text and extract the most important information. Whether you're studying for exams, researching a topic, or trying to understand a complex article, our tool provides:</p>
+      <ul class="text-sm space-y-2">
+        <li><strong style="color: var(--text);">Concise Summaries</strong> - Get the key message in 3-5 sentences</li>
+        <li><strong style="color: var(--text);">Key Points</strong> - Bullet-pointed main ideas for quick review</li>
+        <li><strong style="color: var(--text);">Important Terms</strong> - Vocabulary with definitions for better understanding</li>
+        <li><strong style="color: var(--text);">Difficulty Rating</strong> - Know the complexity level of your material</li>
+      </ul>
+    </div>
+  </div>
+
+</Layout>
+
+<script>
+  import { callGemini, summarizePrompt, parseJSON, getApiKey, hasApiKey, canUseFreeTier, incrementUsage, getRemainingUses } from '../../utils/ai';
+
+  function init() {
+    const input = document.getElementById('input-text') as HTMLTextAreaElement;
+    const charCount = document.getElementById('char-count')!;
+    const summarizeBtn = document.getElementById('summarize-btn')!;
+    const clearBtn = document.getElementById('clear-btn')!;
+    const loading = document.getElementById('loading')!;
+    const errorMsg = document.getElementById('error-msg')!;
+    const errorText = document.getElementById('error-text')!;
+    const results = document.getElementById('results')!;
+    const copyBtn = document.getElementById('copy-btn')!;
+
+    // Restore text from sessionStorage if coming from another tool
+    const saved = sessionStorage.getItem('sg_current_text');
+    if (saved) input.value = saved;
+
+    // Char count
+    input.addEventListener('input', () => {
+      const len = input.value.length;
+      charCount.textContent = `${len.toLocaleString()} / 8,000 characters`;
+      charCount.style.color = len > 8000 ? '#ef4444' : 'var(--text-muted)';
+    });
+    input.dispatchEvent(new Event('input'));
+
+    // Clear
+    clearBtn.addEventListener('click', () => {
+      input.value = '';
+      results.classList.add('hidden');
+      errorMsg.classList.add('hidden');
+      input.dispatchEvent(new Event('input'));
+    });
+
+    // Copy
+    copyBtn.addEventListener('click', () => {
+      const summary = document.getElementById('summary-text')?.textContent || '';
+      navigator.clipboard.writeText(summary).then(() => {
+        copyBtn.textContent = 'Copied!';
+        setTimeout(() => { copyBtn.innerHTML = '<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg> Copy Summary'; }, 2000);
+      });
+    });
+
+    // Summarize
+    summarizeBtn.addEventListener('click', async () => {
+      const text = input.value.trim();
+      if (!text) {
+        errorText.textContent = 'Please paste some text first.';
+        errorMsg.classList.remove('hidden');
+        return;
+      }
+      if (text.length < 50) {
+        errorText.textContent = 'Please paste at least 50 characters for a good summary.';
+        errorMsg.classList.remove('hidden');
+        return;
+      }
+      if (!hasApiKey()) {
+        document.getElementById('api-key-modal')?.classList.remove('hidden');
+        return;
+      }
+      if (!canUseFreeTier()) {
+        errorText.textContent = 'You\'ve used all 5 free generations today. Come back tomorrow or upgrade to Pro!';
+        errorMsg.classList.remove('hidden');
+        return;
+      }
+
+      // Save text for other tools
+      sessionStorage.setItem('sg_current_text', text);
+
+      // Show loading
+      errorMsg.classList.add('hidden');
+      results.classList.add('hidden');
+      loading.classList.remove('hidden');
+      summarizeBtn.disabled = true;
+      summarizeBtn.innerHTML = '<span class="spinner"></span> Analyzing...';
+
+      const response = await callGemini(summarizePrompt(text), getApiKey());
+
+      loading.classList.add('hidden');
+      summarizeBtn.disabled = false;
+      summarizeBtn.innerHTML = '<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg> Summarize';
+
+      if (response.error) {
+        errorText.textContent = response.error;
+        errorMsg.classList.remove('hidden');
+        return;
+      }
+
+      const data = parseJSON(response.text);
+      if (!data) {
+        errorText.textContent = 'Failed to parse AI response. Please try again.';
+        errorMsg.classList.remove('hidden');
+        return;
+      }
+
+      // Track usage
+      incrementUsage();
+      // Update nav usage display
+      const remaining = getRemainingUses();
+      const usageText = document.getElementById('usage-text');
+      const usageFill = document.getElementById('usage-fill');
+      if (usageText) usageText.textContent = `${remaining}/5 free`;
+      if (usageFill) usageFill.style.width = `${(remaining / 5) * 100}%`;
+
+      // Render results
+      document.getElementById('summary-text')!.textContent = data.summary || 'No summary available.';
+
+      const keyPointsList = document.getElementById('key-points')!;
+      keyPointsList.innerHTML = (data.keyPoints || []).map((p: string) =>
+        `<li class="flex items-start gap-2 text-sm" style="color: var(--text); padding: 0.5rem 0; border-bottom: 1px solid var(--border);">
+          <span style="color: #6366f1; flex-shrink: 0;">●</span>
+          <span>${p}</span>
+        </li>`
+      ).join('');
+
+      const termsList = document.getElementById('terms-list')!;
+      termsList.innerHTML = (data.importantTerms || []).map((t: any) =>
+        `<div class="card" style="padding: 0.75rem;">
+          <span class="text-sm font-semibold" style="color: #6366f1;">${t.term}</span>
+          <p class="text-xs mt-1" style="color: var(--text-muted);">${t.definition}</p>
+        </div>`
+      ).join('');
+
+      const badge = document.getElementById('difficulty-badge')!;
+      const diff = (data.difficulty || 'medium').toLowerCase();
+      const diffColors: Record<string, string> = {
+        easy: 'background: rgba(16,185,129,0.1); color: #10b981;',
+        medium: 'background: rgba(245,158,11,0.1); color: #f59e0b;',
+        hard: 'background: rgba(239,68,68,0.1); color: #ef4444;',
+      };
+      badge.setAttribute('style', diffColors[diff] || diffColors.medium);
+      badge.textContent = diff.charAt(0).toUpperCase() + diff.slice(1);
+
+      results.classList.remove('hidden');
+      results.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', init);
+  document.addEventListener('astro:page-load', init);
+</script>

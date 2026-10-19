@@ -1,0 +1,212 @@
+---
+interface Props {
+  title: string;
+  description?: string;
+  isTool?: boolean;
+}
+
+const {
+  title,
+  description = 'StudyGenie - AI-powered study companion. Summarize notes, generate flashcards, create quizzes, and understand any topic instantly.',
+  isTool = false,
+} = Astro.props;
+
+const canonicalURL = new URL(Astro.url.pathname, Astro.site);
+---
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content={description} />
+  <link rel="canonical" href={canonicalURL} />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <meta property="og:title" content={title} />
+  <meta property="og:description" content={description} />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content={canonicalURL} />
+  <meta name="twitter:card" content="summary_large_image" />
+
+  <title>{title}</title>
+</head>
+<body style="background: var(--bg); color: var(--text);">
+
+  <!-- Navbar -->
+  <nav style="background: var(--bg); border-bottom: 1px solid var(--border);" class="sticky top-0 z-50 backdrop-blur-xl">
+    <div class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
+      <a href="/" class="flex items-center gap-2 no-underline">
+        <span class="text-2xl">🧠</span>
+        <span class="text-xl font-bold" style="color: var(--text);">Study<span style="color: #6366f1;">Genie</span></span>
+      </a>
+
+      <div class="hidden md:flex items-center gap-1">
+        <a href="/tools/summarize" class="btn btn-ghost btn-sm">Summarize</a>
+        <a href="/tools/flashcards" class="btn btn-ghost btn-sm">Flashcards</a>
+        <a href="/tools/quiz" class="btn btn-ghost btn-sm">Quiz</a>
+        <a href="/tools/explain" class="btn btn-ghost btn-sm">Explain</a>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <div class="usage-bar hidden sm:flex" id="usage-display">
+          <span id="usage-text">5/5 free</span>
+          <div style="width: 60px; height: 4px; background: var(--border); border-radius: 9999px; overflow: hidden;">
+            <div id="usage-fill" class="usage-bar-fill" style="width: 100%;"></div>
+          </div>
+        </div>
+        <button id="theme-toggle" class="btn btn-ghost btn-sm" style="padding: 0.5rem;" aria-label="Toggle theme">
+          <svg id="icon-moon" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
+          <svg id="icon-sun" class="w-5 h-5 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+        </button>
+        <button id="mobile-menu-btn" class="md:hidden btn btn-ghost btn-sm" style="padding: 0.5rem;" aria-label="Menu">
+          <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Mobile menu -->
+    <div id="mobile-menu" class="hidden md:hidden" style="border-top: 1px solid var(--border); background: var(--bg);">
+      <div class="px-4 py-3 space-y-1">
+        <a href="/tools/summarize" class="block py-2 px-3 rounded-lg text-sm font-medium" style="color: var(--text);">Summarize</a>
+        <a href="/tools/flashcards" class="block py-2 px-3 rounded-lg text-sm font-medium" style="color: var(--text);">Flashcards</a>
+        <a href="/tools/quiz" class="block py-2 px-3 rounded-lg text-sm font-medium" style="color: var(--text);">Quiz</a>
+        <a href="/tools/explain" class="block py-2 px-3 rounded-lg text-sm font-medium" style="color: var(--text);">Explain</a>
+        <a href="/tools/youtube" class="block py-2 px-3 rounded-lg text-sm font-medium" style="color: var(--text);">YouTube Summary</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- API Key Setup Modal -->
+  <div id="api-key-modal" class="hidden fixed inset-0 z-[60] flex items-center justify-center" style="background: rgba(0,0,0,0.5); backdrop-filter: blur(4px);">
+    <div class="card mx-4" style="max-width: 28rem; width: 100%;">
+      <h3 class="text-lg font-bold mb-1" style="color: var(--text);">Set Up Your AI Key</h3>
+      <p class="text-sm mb-4" style="color: var(--text-muted);">Get a free Gemini API key to use StudyGenie. It's free and takes 30 seconds.</p>
+      <ol class="text-sm mb-4 space-y-2" style="color: var(--text-muted);">
+        <li>1. Go to <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener" style="color: #6366f1; font-weight: 600;">aistudio.google.com/apikey</a></li>
+        <li>2. Click "Create API Key"</li>
+        <li>3. Copy and paste it below</li>
+      </ol>
+      <input id="api-key-input" type="password" placeholder="Paste your Gemini API key..." class="input mb-3" />
+      <div class="flex gap-2">
+        <button id="save-key-btn" class="btn btn-brand flex-1">Save Key</button>
+        <button id="close-key-modal" class="btn btn-outline">Cancel</button>
+      </div>
+      <p class="text-xs mt-3" style="color: var(--text-muted);">Your key is stored locally and never sent to our servers.</p>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <main>
+    <slot />
+  </main>
+
+  <!-- Footer -->
+  {!isTool && (
+    <footer style="border-top: 1px solid var(--border); background: var(--bg-alt);" class="mt-20">
+      <div class="max-w-6xl mx-auto px-4 py-12">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
+          <div class="col-span-2 md:col-span-1">
+            <div class="flex items-center gap-2 mb-3">
+              <span class="text-xl">🧠</span>
+              <span class="font-bold" style="color: var(--text);">Study<span style="color: #6366f1;">Genie</span></span>
+            </div>
+            <p class="text-sm" style="color: var(--text-muted);">AI-powered study companion for students everywhere.</p>
+          </div>
+          <div>
+            <h4 class="font-semibold text-sm mb-3" style="color: var(--text);">Tools</h4>
+            <div class="space-y-2">
+              <a href="/tools/summarize" class="block text-sm no-underline" style="color: var(--text-muted);">Summarizer</a>
+              <a href="/tools/flashcards" class="block text-sm no-underline" style="color: var(--text-muted);">Flashcards</a>
+              <a href="/tools/quiz" class="block text-sm no-underline" style="color: var(--text-muted);">Quiz Generator</a>
+              <a href="/tools/explain" class="block text-sm no-underline" style="color: var(--text-muted);">Explain Topics</a>
+            </div>
+          </div>
+          <div>
+            <h4 class="font-semibold text-sm mb-3" style="color: var(--text);">Company</h4>
+            <div class="space-y-2">
+              <a href="/about" class="block text-sm no-underline" style="color: var(--text-muted);">About</a>
+              <a href="/privacy" class="block text-sm no-underline" style="color: var(--text-muted);">Privacy</a>
+              <a href="/terms" class="block text-sm no-underline" style="color: var(--text-muted);">Terms</a>
+            </div>
+          </div>
+          <div>
+            <h4 class="font-semibold text-sm mb-3" style="color: var(--text);">Support</h4>
+            <div class="space-y-2">
+              <a href="mailto:hello@studygenie.in" class="block text-sm no-underline" style="color: var(--text-muted);">Contact</a>
+              <a href="#" class="block text-sm no-underline" style="color: var(--text-muted);">FAQ</a>
+            </div>
+          </div>
+        </div>
+        <div class="mt-8 pt-8 text-center text-xs" style="border-top: 1px solid var(--border); color: var(--text-muted);">
+          &copy; 2026 StudyGenie. Made with love in India.
+        </div>
+      </div>
+    </footer>
+  )}
+
+  <script is:inline>
+    // Theme toggle
+    const html = document.documentElement;
+    const moonIcon = document.getElementById('icon-moon');
+    const sunIcon = document.getElementById('icon-sun');
+
+    function applyTheme(dark) {
+      html.classList.toggle('dark', dark);
+      if (moonIcon) moonIcon.classList.toggle('hidden', dark);
+      if (sunIcon) sunIcon.classList.toggle('hidden', !dark);
+    }
+
+    const savedTheme = localStorage.getItem('sg_dark');
+    applyTheme(savedTheme ? savedTheme === 'true' : window.matchMedia('(prefers-color-scheme: dark)').matches);
+
+    document.getElementById('theme-toggle')?.addEventListener('click', () => {
+      const isDark = html.classList.toggle('dark');
+      localStorage.setItem('sg_dark', String(isDark));
+      applyTheme(isDark);
+    });
+
+    // Mobile menu
+    document.getElementById('mobile-menu-btn')?.addEventListener('click', () => {
+      document.getElementById('mobile-menu')?.classList.toggle('hidden');
+    });
+
+    // Usage display
+    function updateUsageDisplay() {
+      const data = JSON.parse(localStorage.getItem('sg_daily_usage') || '{}');
+      const today = new Date().toISOString().split('T')[0];
+      const used = data[today] || 0;
+      const remaining = Math.max(0, 5 - used);
+      const textEl = document.getElementById('usage-text');
+      const fillEl = document.getElementById('usage-fill');
+      if (textEl) textEl.textContent = remaining + '/5 free';
+      if (fillEl) fillEl.style.width = ((remaining / 5) * 100) + '%';
+    }
+    updateUsageDisplay();
+
+    // API key modal
+    const modal = document.getElementById('api-key-modal');
+    const saveBtn = document.getElementById('save-key-btn');
+    const closeBtn = document.getElementById('close-key-modal');
+
+    if (saveBtn) {
+      saveBtn.addEventListener('click', () => {
+        const key = document.getElementById('api-key-input')?.value?.trim();
+        if (key && key.length > 10) {
+          localStorage.setItem('sg_gemini_key', key);
+          modal?.classList.add('hidden');
+          location.reload();
+        }
+      });
+    }
+    closeBtn?.addEventListener('click', () => modal?.classList.add('hidden'));
+
+    // Show modal if no key and on a tool page
+    if (!localStorage.getItem('sg_gemini_key') && window.location.pathname.startsWith('/tools/')) {
+      modal?.classList.remove('hidden');
+    }
+  </script>
+</body>
+</html>

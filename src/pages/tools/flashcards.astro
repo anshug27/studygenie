@@ -1,0 +1,376 @@
+---
+import Layout from '../../layouts/Layout.astro';
+---
+<Layout title="AI Flashcard Generator - StudyGenie" description="Turn any study material into interactive AI-generated flashcards. Paste your notes, textbook chapters, or articles and get flip-cards instantly." isTool={true}>
+
+  <div class="tool-container">
+    <div class="tool-header">
+      <h1>&#x1F0CF; AI Flashcard Generator</h1>
+      <p>Turn any study material into interactive flashcards</p>
+    </div>
+
+    <!-- Input Area -->
+    <div class="tool-input-area">
+      <textarea id="input-text" class="input" placeholder="Paste your study material, lecture notes, textbook chapter, or article here..." style="min-height: 200px;"></textarea>
+      <div class="flex items-center justify-between mt-3 flex-wrap gap-2">
+        <span id="char-count" class="text-xs" style="color: var(--text-muted);">0 / 8,000 characters</span>
+        <div class="flex items-center gap-3">
+          <div class="flex items-center gap-2">
+            <label for="card-count" class="text-sm font-medium" style="color: var(--text-muted);">Cards:</label>
+            <select id="card-count" class="input" style="width: auto; padding: 0.5rem 0.75rem; font-size: 0.8125rem;">
+              <option value="4">4</option>
+              <option value="6">6</option>
+              <option value="8" selected>8</option>
+              <option value="10">10</option>
+            </select>
+          </div>
+          <button id="clear-btn" class="btn btn-ghost btn-sm">Clear</button>
+          <button id="generate-btn" class="btn btn-brand">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+            Generate Flashcards
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    <div id="loading" class="hidden text-center py-12">
+      <div class="spinner spinner-dark mx-auto mb-3" style="width: 2rem; height: 2rem;"></div>
+      <p class="text-sm" style="color: var(--text-muted);">AI is creating your flashcards...</p>
+    </div>
+
+    <!-- Error State -->
+    <div id="error-msg" class="hidden card mb-4" style="border-color: #ef4444; border-left: 4px solid #ef4444; padding: 1rem;">
+      <p class="text-sm font-medium" style="color: #ef4444;" id="error-text">Something went wrong</p>
+    </div>
+
+    <!-- Results -->
+    <div id="results" class="hidden">
+
+      <!-- Interactive Card Viewer -->
+      <div class="result-section">
+        <h3>&#x1F0CF; Flashcard Viewer</h3>
+        <div class="card" style="padding: 2rem;">
+          <!-- Card counter & navigation -->
+          <div class="flex items-center justify-between mb-4">
+            <button id="prev-btn" class="btn btn-outline btn-sm" disabled>
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+              Previous
+            </button>
+            <span id="card-counter" class="text-sm font-semibold" style="color: var(--text-muted);">1 / 8</span>
+            <button id="next-btn" class="btn btn-outline btn-sm">
+              Next
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            </button>
+          </div>
+
+          <!-- Flashcard -->
+          <div id="flashcard-viewer" class="flashcard-wrapper" style="max-width: 32rem; margin: 0 auto;">
+            <div id="active-flashcard" class="flashcard">
+              <div class="flashcard-face flashcard-front">
+                <p id="card-front-text">Question goes here</p>
+              </div>
+              <div class="flashcard-face flashcard-back">
+                <p id="card-back-text">Answer goes here</p>
+              </div>
+            </div>
+          </div>
+
+          <p class="text-center text-xs mt-4" style="color: var(--text-muted);">Click or tap the card to flip it</p>
+        </div>
+      </div>
+
+      <!-- Tab Bar for View Modes -->
+      <div class="result-section">
+        <div class="tab-bar mb-4" style="max-width: 16rem;">
+          <button class="tab active" data-tab="grid">Grid View</button>
+          <button class="tab" data-tab="list">List View</button>
+        </div>
+
+        <!-- Grid View -->
+        <div id="grid-view" class="grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
+
+        <!-- List View -->
+        <div id="list-view" class="hidden space-y-3"></div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex flex-wrap gap-2 mb-6">
+        <button id="copy-all-btn" class="btn btn-outline btn-sm">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+          Copy All
+        </button>
+        <a href="/tools/quiz" class="btn btn-outline btn-sm">
+          &#x1F9EA; Generate Quiz
+        </a>
+        <a href="/tools/summarize" class="btn btn-outline btn-sm">
+          &#x1F4DD; Summarize
+        </a>
+      </div>
+    </div>
+
+    <!-- SEO Content -->
+    <div class="mt-12 space-y-6" style="color: var(--text-muted);">
+      <h2 class="text-xl font-bold" style="color: var(--text);">How the AI Flashcard Generator Works</h2>
+      <p class="text-sm leading-relaxed">Our AI-powered flashcard generator uses Google's Gemini model to analyze your study material and create targeted flashcards that test real understanding, not just memorization. Perfect for exam prep, language learning, or mastering any new topic.</p>
+      <ul class="text-sm space-y-2">
+        <li><strong style="color: var(--text);">Smart Question Generation</strong> - AI identifies key concepts and creates questions that test deep understanding</li>
+        <li><strong style="color: var(--text);">Interactive Flip Cards</strong> - Click to reveal answers, just like physical flashcards</li>
+        <li><strong style="color: var(--text);">Customizable Count</strong> - Generate 4, 6, 8, or 10 cards depending on your needs</li>
+        <li><strong style="color: var(--text);">Multiple View Modes</strong> - Study with the interactive viewer or review all cards at once in grid or list view</li>
+        <li><strong style="color: var(--text);">Seamless Integration</strong> - Easily switch to quiz mode or summarizer with the same text</li>
+      </ul>
+      <h3 class="text-lg font-bold" style="color: var(--text);">Tips for Better Flashcards</h3>
+      <p class="text-sm leading-relaxed">For the best results, paste well-structured content like textbook chapters, lecture notes, or article excerpts. The AI works best with content between 200 and 5,000 characters. More specific content produces more targeted and useful flashcards.</p>
+    </div>
+  </div>
+
+</Layout>
+
+<script>
+  import { callGemini, flashcardsPrompt, parseJSON, getApiKey, hasApiKey, canUseFreeTier, incrementUsage, getRemainingUses } from '../../utils/ai';
+
+  function init() {
+    const input = document.getElementById('input-text') as HTMLTextAreaElement;
+    const charCount = document.getElementById('char-count')!;
+    const cardCountSelect = document.getElementById('card-count') as HTMLSelectElement;
+    const generateBtn = document.getElementById('generate-btn')!;
+    const clearBtn = document.getElementById('clear-btn')!;
+    const loading = document.getElementById('loading')!;
+    const errorMsg = document.getElementById('error-msg')!;
+    const errorText = document.getElementById('error-text')!;
+    const results = document.getElementById('results')!;
+    const copyAllBtn = document.getElementById('copy-all-btn')!;
+    const prevBtn = document.getElementById('prev-btn') as HTMLButtonElement;
+    const nextBtn = document.getElementById('next-btn') as HTMLButtonElement;
+    const cardCounter = document.getElementById('card-counter')!;
+    const activeFlashcard = document.getElementById('active-flashcard')!;
+    const cardFrontText = document.getElementById('card-front-text')!;
+    const cardBackText = document.getElementById('card-back-text')!;
+    const gridView = document.getElementById('grid-view')!;
+    const listView = document.getElementById('list-view')!;
+
+    let flashcards: { front: string; back: string }[] = [];
+    let currentIndex = 0;
+
+    // Restore text from sessionStorage
+    const saved = sessionStorage.getItem('sg_current_text');
+    if (saved) input.value = saved;
+
+    // Char count
+    input.addEventListener('input', () => {
+      const len = input.value.length;
+      charCount.textContent = `${len.toLocaleString()} / 8,000 characters`;
+      charCount.style.color = len > 8000 ? '#ef4444' : 'var(--text-muted)';
+    });
+    input.dispatchEvent(new Event('input'));
+
+    // Clear
+    clearBtn.addEventListener('click', () => {
+      input.value = '';
+      results.classList.add('hidden');
+      errorMsg.classList.add('hidden');
+      input.dispatchEvent(new Event('input'));
+    });
+
+    // Tab switching
+    document.querySelectorAll('.tab-bar .tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.tab-bar .tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        const view = (tab as HTMLElement).dataset.tab;
+        if (view === 'grid') {
+          gridView.classList.remove('hidden');
+          listView.classList.add('hidden');
+        } else {
+          gridView.classList.add('hidden');
+          listView.classList.remove('hidden');
+        }
+      });
+    });
+
+    // Flashcard viewer - flip on click
+    document.getElementById('flashcard-viewer')!.addEventListener('click', () => {
+      activeFlashcard.classList.toggle('flipped');
+    });
+
+    // Navigation
+    function updateViewer() {
+      if (flashcards.length === 0) return;
+      const card = flashcards[currentIndex];
+      cardFrontText.textContent = card.front;
+      cardBackText.textContent = card.back;
+      activeFlashcard.classList.remove('flipped');
+      cardCounter.textContent = `${currentIndex + 1} / ${flashcards.length}`;
+      prevBtn.disabled = currentIndex === 0;
+      nextBtn.disabled = currentIndex === flashcards.length - 1;
+    }
+
+    prevBtn.addEventListener('click', () => {
+      if (currentIndex > 0) {
+        currentIndex--;
+        updateViewer();
+      }
+    });
+
+    nextBtn.addEventListener('click', () => {
+      if (currentIndex < flashcards.length - 1) {
+        currentIndex++;
+        updateViewer();
+      }
+    });
+
+    // Keyboard navigation
+    document.addEventListener('keydown', (e) => {
+      if (results.classList.contains('hidden')) return;
+      if (e.key === 'ArrowLeft' && currentIndex > 0) {
+        currentIndex--;
+        updateViewer();
+      } else if (e.key === 'ArrowRight' && currentIndex < flashcards.length - 1) {
+        currentIndex++;
+        updateViewer();
+      } else if (e.key === ' ' || e.key === 'Enter') {
+        const active = document.activeElement;
+        if (active && (active.tagName === 'TEXTAREA' || active.tagName === 'INPUT' || active.tagName === 'SELECT' || active.tagName === 'BUTTON')) return;
+        e.preventDefault();
+        activeFlashcard.classList.toggle('flipped');
+      }
+    });
+
+    // Copy all
+    copyAllBtn.addEventListener('click', () => {
+      const text = flashcards.map((c, i) =>
+        `Card ${i + 1}:\nQ: ${c.front}\nA: ${c.back}`
+      ).join('\n\n');
+      navigator.clipboard.writeText(text).then(() => {
+        copyAllBtn.textContent = 'Copied!';
+        setTimeout(() => {
+          copyAllBtn.innerHTML = '<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg> Copy All';
+        }, 2000);
+      });
+    });
+
+    // Generate flashcards
+    generateBtn.addEventListener('click', async () => {
+      const text = input.value.trim();
+      if (!text) {
+        errorText.textContent = 'Please paste some text first.';
+        errorMsg.classList.remove('hidden');
+        return;
+      }
+      if (text.length < 50) {
+        errorText.textContent = 'Please paste at least 50 characters for good flashcards.';
+        errorMsg.classList.remove('hidden');
+        return;
+      }
+      if (!hasApiKey()) {
+        document.getElementById('api-key-modal')?.classList.remove('hidden');
+        return;
+      }
+      if (!canUseFreeTier()) {
+        errorText.textContent = "You've used all 5 free generations today. Come back tomorrow or upgrade to Pro!";
+        errorMsg.classList.remove('hidden');
+        return;
+      }
+
+      // Save text for other tools
+      sessionStorage.setItem('sg_current_text', text);
+
+      const count = parseInt(cardCountSelect.value);
+
+      // Show loading
+      errorMsg.classList.add('hidden');
+      results.classList.add('hidden');
+      loading.classList.remove('hidden');
+      generateBtn.disabled = true;
+      generateBtn.innerHTML = '<span class="spinner"></span> Generating...';
+
+      const response = await callGemini(flashcardsPrompt(text, count), getApiKey());
+
+      loading.classList.add('hidden');
+      generateBtn.disabled = false;
+      generateBtn.innerHTML = '<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg> Generate Flashcards';
+
+      if (response.error) {
+        errorText.textContent = response.error;
+        errorMsg.classList.remove('hidden');
+        return;
+      }
+
+      const data = parseJSON(response.text);
+      if (!data || !data.flashcards || !Array.isArray(data.flashcards) || data.flashcards.length === 0) {
+        errorText.textContent = 'Failed to parse AI response. Please try again.';
+        errorMsg.classList.remove('hidden');
+        return;
+      }
+
+      // Track usage
+      incrementUsage();
+      const remaining = getRemainingUses();
+      const usageText = document.getElementById('usage-text');
+      const usageFill = document.getElementById('usage-fill');
+      if (usageText) usageText.textContent = `${remaining}/5 free`;
+      if (usageFill) usageFill.style.width = `${(remaining / 5) * 100}%`;
+
+      // Store flashcards
+      flashcards = data.flashcards;
+      currentIndex = 0;
+
+      // Render interactive viewer
+      updateViewer();
+
+      // Render grid view
+      gridView.innerHTML = flashcards.map((card, i) =>
+        `<div class="flashcard-wrapper" data-card-index="${i}">
+          <div class="flashcard" id="grid-card-${i}">
+            <div class="flashcard-face flashcard-front">
+              <div>
+                <div class="text-xs font-semibold mb-2" style="opacity: 0.7;">Card ${i + 1}</div>
+                <p>${escapeHtml(card.front)}</p>
+              </div>
+            </div>
+            <div class="flashcard-face flashcard-back">
+              <div>
+                <div class="text-xs font-semibold mb-2" style="color: #6366f1;">Answer</div>
+                <p>${escapeHtml(card.back)}</p>
+              </div>
+            </div>
+          </div>
+        </div>`
+      ).join('');
+
+      // Click to flip grid cards
+      gridView.querySelectorAll('.flashcard-wrapper').forEach(wrapper => {
+        wrapper.addEventListener('click', () => {
+          const card = wrapper.querySelector('.flashcard');
+          card?.classList.toggle('flipped');
+        });
+      });
+
+      // Render list view
+      listView.innerHTML = flashcards.map((card, i) =>
+        `<div class="card" style="padding: 1rem;">
+          <div class="flex items-start gap-3">
+            <span class="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold" style="background: linear-gradient(135deg, #6366f1, #818cf8); color: #fff;">${i + 1}</span>
+            <div class="flex-1">
+              <p class="text-sm font-semibold mb-1" style="color: var(--text);">${escapeHtml(card.front)}</p>
+              <p class="text-sm" style="color: var(--text-muted);">${escapeHtml(card.back)}</p>
+            </div>
+          </div>
+        </div>`
+      ).join('');
+
+      results.classList.remove('hidden');
+      results.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  }
+
+  function escapeHtml(str: string): string {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  document.addEventListener('DOMContentLoaded', init);
+  document.addEventListener('astro:page-load', init);
+</script>

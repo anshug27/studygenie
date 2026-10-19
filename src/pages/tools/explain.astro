@@ -1,0 +1,268 @@
+---
+import Layout from '../../layouts/Layout.astro';
+---
+<Layout title="Explain Like I'm 5 - StudyGenie" description="Understand any complex topic in simple language with analogies, examples, and fun facts. Powered by AI." isTool={true}>
+
+  <div class="tool-container">
+    <div class="tool-header">
+      <h1>💡 Explain Like I'm 5</h1>
+      <p>Understand any complex topic in simple language</p>
+    </div>
+
+    <!-- Input Area -->
+    <div class="tool-input-area">
+      <input id="topic-input" type="text" class="input" placeholder="Type a topic or concept..." />
+
+      <!-- Quick Topic Chips -->
+      <div class="flex flex-wrap gap-2 mt-3">
+        <button class="topic-chip btn btn-outline btn-sm">Quantum Physics</button>
+        <button class="topic-chip btn btn-outline btn-sm">Blockchain</button>
+        <button class="topic-chip btn btn-outline btn-sm">DNA Replication</button>
+        <button class="topic-chip btn btn-outline btn-sm">Machine Learning</button>
+        <button class="topic-chip btn btn-outline btn-sm">Black Holes</button>
+        <button class="topic-chip btn btn-outline btn-sm">Inflation</button>
+        <button class="topic-chip btn btn-outline btn-sm">Photosynthesis</button>
+        <button class="topic-chip btn btn-outline btn-sm">Calculus</button>
+      </div>
+
+      <div class="flex items-center justify-end mt-3">
+        <button id="explain-btn" class="btn btn-brand">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+          Explain It
+        </button>
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    <div id="loading" class="hidden text-center py-12">
+      <div class="spinner spinner-dark mx-auto mb-3" style="width: 2rem; height: 2rem;"></div>
+      <p class="text-sm" style="color: var(--text-muted);">Breaking it down into simple language...</p>
+    </div>
+
+    <!-- Error State -->
+    <div id="error-msg" class="hidden card mb-4" style="border-color: #ef4444; border-left: 4px solid #ef4444; padding: 1rem;">
+      <p class="text-sm font-medium" style="color: #ef4444;" id="error-text">Something went wrong</p>
+    </div>
+
+    <!-- Results -->
+    <div id="results" class="hidden">
+
+      <!-- Topic Title -->
+      <div class="text-center mb-6">
+        <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-semibold" style="background: rgba(99,102,241,0.1); color: #6366f1;">
+          Explaining: <span id="result-topic"></span>
+        </span>
+      </div>
+
+      <!-- Simple Explanation -->
+      <div class="result-section">
+        <h3>
+          <svg class="w-5 h-5" style="color: #6366f1;" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
+          Simple Explanation
+        </h3>
+        <div class="card">
+          <p id="simple-text" class="text-sm leading-relaxed" style="color: var(--text);"></p>
+        </div>
+      </div>
+
+      <!-- Analogy -->
+      <div class="result-section">
+        <h3>
+          <span style="color: #f59e0b; font-size: 1.125rem;">💡</span>
+          Real-World Analogy
+        </h3>
+        <div class="card" style="border-left: 4px solid #f59e0b;">
+          <p id="analogy-text" class="text-sm leading-relaxed" style="color: var(--text);"></p>
+        </div>
+      </div>
+
+      <!-- Concrete Example -->
+      <div class="result-section">
+        <h3>
+          <svg class="w-5 h-5" style="color: #10b981;" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          Concrete Example
+        </h3>
+        <div class="card">
+          <p id="example-text" class="text-sm leading-relaxed" style="color: var(--text);"></p>
+        </div>
+      </div>
+
+      <!-- Fun Fact -->
+      <div class="result-section">
+        <h3>
+          <span style="color: #ec4899; font-size: 1.125rem;">⭐</span>
+          Fun Fact
+        </h3>
+        <div class="card" style="border-left: 4px solid #ec4899;">
+          <p id="funfact-text" class="text-sm leading-relaxed" style="color: var(--text);"></p>
+        </div>
+      </div>
+
+      <!-- Steps to Understand -->
+      <div class="result-section">
+        <h3>
+          <svg class="w-5 h-5" style="color: #6366f1;" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
+          Steps to Understand
+        </h3>
+        <div class="card">
+          <ol id="steps-list" class="space-y-3"></ol>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex flex-wrap gap-2 mb-6">
+        <button id="copy-btn" class="btn btn-outline btn-sm">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+          Copy Explanation
+        </button>
+        <button id="reset-btn" class="btn btn-outline btn-sm">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+          Ask about another topic
+        </button>
+      </div>
+    </div>
+
+    <!-- SEO Content -->
+    <div class="mt-12 space-y-6" style="color: var(--text-muted);">
+      <h2 class="text-xl font-bold" style="color: var(--text);">Understand Complex Topics Instantly</h2>
+      <p class="text-sm leading-relaxed">Struggling with a difficult concept? Our AI-powered "Explain Like I'm 5" tool uses Google's Gemini model to break down any topic into simple, easy-to-understand language. Whether you're studying for exams, exploring a new subject, or just curious, this tool provides:</p>
+      <ul class="text-sm space-y-2">
+        <li><strong style="color: var(--text);">Simple Explanations</strong> - Complex ideas broken down into 3-4 easy sentences</li>
+        <li><strong style="color: var(--text);">Real-World Analogies</strong> - Relatable comparisons that make concepts click</li>
+        <li><strong style="color: var(--text);">Concrete Examples</strong> - Practical examples you can visualize and remember</li>
+        <li><strong style="color: var(--text);">Fun Facts</strong> - Interesting tidbits that spark curiosity and aid memory</li>
+        <li><strong style="color: var(--text);">Step-by-Step Breakdowns</strong> - Numbered steps to build understanding gradually</li>
+      </ul>
+      <p class="text-sm leading-relaxed">Perfect for students studying physics, chemistry, biology, mathematics, economics, computer science, and more. Works great for competitive exam preparation like JEE, NEET, UPSC, and board exams.</p>
+    </div>
+  </div>
+
+</Layout>
+
+<script>
+  import { callGemini, explainPrompt, parseJSON, getApiKey, hasApiKey, canUseFreeTier, incrementUsage, getRemainingUses } from '../../utils/ai';
+
+  function init() {
+    const input = document.getElementById('topic-input') as HTMLInputElement;
+    const explainBtn = document.getElementById('explain-btn')!;
+    const loading = document.getElementById('loading')!;
+    const errorMsg = document.getElementById('error-msg')!;
+    const errorText = document.getElementById('error-text')!;
+    const results = document.getElementById('results')!;
+    const copyBtn = document.getElementById('copy-btn')!;
+    const resetBtn = document.getElementById('reset-btn')!;
+    const chips = document.querySelectorAll('.topic-chip');
+
+    // Chip clicks fill input
+    chips.forEach(chip => {
+      chip.addEventListener('click', () => {
+        input.value = chip.textContent?.trim() || '';
+        input.focus();
+      });
+    });
+
+    // Enter key triggers explain
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') explainBtn.click();
+    });
+
+    // Reset button
+    resetBtn.addEventListener('click', () => {
+      input.value = '';
+      results.classList.add('hidden');
+      errorMsg.classList.add('hidden');
+      input.focus();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+
+    // Copy
+    copyBtn.addEventListener('click', () => {
+      const simple = document.getElementById('simple-text')?.textContent || '';
+      const analogy = document.getElementById('analogy-text')?.textContent || '';
+      const example = document.getElementById('example-text')?.textContent || '';
+      const funfact = document.getElementById('funfact-text')?.textContent || '';
+      const steps = Array.from(document.querySelectorAll('#steps-list li')).map(li => li.textContent).join('\n');
+      const full = `Simple Explanation:\n${simple}\n\nAnalogy:\n${analogy}\n\nExample:\n${example}\n\nFun Fact:\n${funfact}\n\nSteps:\n${steps}`;
+      navigator.clipboard.writeText(full).then(() => {
+        copyBtn.textContent = 'Copied!';
+        setTimeout(() => {
+          copyBtn.innerHTML = '<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg> Copy Explanation';
+        }, 2000);
+      });
+    });
+
+    // Explain
+    explainBtn.addEventListener('click', async () => {
+      const topic = input.value.trim();
+      if (!topic) {
+        errorText.textContent = 'Please type a topic or concept first.';
+        errorMsg.classList.remove('hidden');
+        return;
+      }
+      if (!hasApiKey()) {
+        document.getElementById('api-key-modal')?.classList.remove('hidden');
+        return;
+      }
+      if (!canUseFreeTier()) {
+        errorText.textContent = 'You\'ve used all 5 free generations today. Come back tomorrow or upgrade to Pro!';
+        errorMsg.classList.remove('hidden');
+        return;
+      }
+
+      // Show loading
+      errorMsg.classList.add('hidden');
+      results.classList.add('hidden');
+      loading.classList.remove('hidden');
+      explainBtn.disabled = true;
+      explainBtn.innerHTML = '<span class="spinner"></span> Explaining...';
+
+      const response = await callGemini(explainPrompt(topic), getApiKey());
+
+      loading.classList.add('hidden');
+      explainBtn.disabled = false;
+      explainBtn.innerHTML = '<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg> Explain It';
+
+      if (response.error) {
+        errorText.textContent = response.error;
+        errorMsg.classList.remove('hidden');
+        return;
+      }
+
+      const data = parseJSON(response.text);
+      if (!data) {
+        errorText.textContent = 'Failed to parse AI response. Please try again.';
+        errorMsg.classList.remove('hidden');
+        return;
+      }
+
+      // Track usage
+      incrementUsage();
+      const remaining = getRemainingUses();
+      const usageText = document.getElementById('usage-text');
+      const usageFill = document.getElementById('usage-fill');
+      if (usageText) usageText.textContent = `${remaining}/5 free`;
+      if (usageFill) usageFill.style.width = `${(remaining / 5) * 100}%`;
+
+      // Render results
+      document.getElementById('result-topic')!.textContent = topic;
+      document.getElementById('simple-text')!.textContent = data.simpleExplanation || 'No explanation available.';
+      document.getElementById('analogy-text')!.textContent = data.analogy || 'No analogy available.';
+      document.getElementById('example-text')!.textContent = data.example || 'No example available.';
+      document.getElementById('funfact-text')!.textContent = data.funFact || 'No fun fact available.';
+
+      const stepsList = document.getElementById('steps-list')!;
+      stepsList.innerHTML = (data.steps || []).map((step: string, i: number) =>
+        `<li class="flex items-start gap-3 text-sm" style="color: var(--text);">
+          <span class="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold" style="background: rgba(99,102,241,0.1); color: #6366f1;">${i + 1}</span>
+          <span class="pt-0.5">${step}</span>
+        </li>`
+      ).join('');
+
+      results.classList.remove('hidden');
+      results.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', init);
+  document.addEventListener('astro:page-load', init);
+</script>
