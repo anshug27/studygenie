@@ -34,6 +34,8 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
   <meta name="robots" content="index, follow, max-image-preview:large" />
   <meta name="author" content="StudyGenie" />
   <meta name="keywords" content="AI study tool, summarizer, flashcards, quiz generator, study notes, exam preparation, NEET, JEE, board exams, study planner" />
+  <meta name="google-site-verification" content="TY7HVzLYBBq2gLhaGODm6b3kM2gsKehUL_HF_-UU4hI" />
+  
   <meta property="og:title" content={title} />
   <meta property="og:description" content={description} />
   <meta property="og:type" content="website" />
@@ -51,9 +53,23 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
   <!-- Google AdSense -->
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXX" crossorigin="anonymous"></script>
 
+  <!-- Google Tag Manager -->
+  <script is:inline>
+    (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-XXXXXXX');
+  </script>
+  <!-- End Google Tag Manager -->
+
   <title>{title}</title>
 </head>
 <body style="background: var(--bg); color: var(--text);">
+  <!-- Google Tag Manager (noscript) -->
+  <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-XXXXXXX"
+  height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+  <!-- End Google Tag Manager (noscript) -->
 
   <!-- Navbar -->
   <nav style="background: var(--bg); border-bottom: 1px solid var(--border);" class="sticky top-0 z-50 backdrop-blur-xl">
@@ -122,10 +138,10 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
   <!-- AdSense Top Banner (tool pages) -->
   {isTool && (
     <div class="max-w-4xl mx-auto px-4 mt-4">
-      <div class="ad-unit" style="min-height: 90px; background: var(--bg-alt); border: 1px dashed var(--border); border-radius: 0.75rem; display: flex; align-items: center; justify-content: center;">
+      <div class="ad-unit" style="min-height: 90px; background: var(--bg-alt); border: 1px dashed var(--border); border-radius: 0.75rem; display: flex; align-items: center; justify-content: center; overflow: hidden;">
         <!-- Replace with actual AdSense code after approval -->
-        <!-- <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-XXXXXXX" data-ad-slot="XXXXXXX" data-ad-format="horizontal"></ins> -->
-        <span class="text-xs" style="color: var(--text-muted); opacity: 0.4;">Sponsored</span>
+        <ins class="adsbygoogle" style="display:block; width:100%; height:90px;" data-ad-client="ca-pub-XXXXXXX" data-ad-slot="TOP_SLOT_ID" data-ad-format="horizontal"></ins>
+        <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
       </div>
     </div>
   )}
@@ -138,8 +154,10 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
   <!-- AdSense Bottom Banner (tool pages) -->
   {isTool && (
     <div class="max-w-4xl mx-auto px-4 mb-8">
-      <div class="ad-unit" style="min-height: 90px; background: var(--bg-alt); border: 1px dashed var(--border); border-radius: 0.75rem; display: flex; align-items: center; justify-content: center;">
-        <span class="text-xs" style="color: var(--text-muted); opacity: 0.4;">Sponsored</span>
+      <div class="ad-unit" style="min-height: 90px; background: var(--bg-alt); border: 1px dashed var(--border); border-radius: 0.75rem; display: flex; align-items: center; justify-content: center; overflow: hidden;">
+        <!-- Replace with actual AdSense code after approval -->
+        <ins class="adsbygoogle" style="display:block; width:100%; height:90px;" data-ad-client="ca-pub-XXXXXXX" data-ad-slot="BOTTOM_SLOT_ID" data-ad-format="horizontal"></ins>
+        <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
       </div>
     </div>
   )}
@@ -188,8 +206,10 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 
         <!-- AdSense Footer -->
         <div class="mt-8 pt-6" style="border-top: 1px solid var(--border);">
-          <div class="ad-unit mb-6" style="min-height: 90px; background: var(--bg); border: 1px dashed var(--border); border-radius: 0.75rem; display: flex; align-items: center; justify-content: center;">
-            <span class="text-xs" style="color: var(--text-muted); opacity: 0.4;">Sponsored</span>
+          <div class="ad-unit mb-6" style="min-height: 90px; background: var(--bg); border: 1px dashed var(--border); border-radius: 0.75rem; display: flex; align-items: center; justify-content: center; overflow: hidden;">
+            <!-- Replace with actual AdSense code after approval -->
+            <ins class="adsbygoogle" style="display:block; width:100%; height:90px;" data-ad-client="ca-pub-XXXXXXX" data-ad-slot="FOOTER_SLOT_ID" data-ad-format="horizontal"></ins>
+            <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
           </div>
         </div>
 
