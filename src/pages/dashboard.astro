@@ -29,7 +29,7 @@ import Layout from '../layouts/Layout.astro';
             <p class="text-sm" style="color: var(--text-muted);" id="user-email">email@example.com</p>
           </div>
         </div>
-        <button id="logout-btn" class="btn btn-outline btn-sm">Log Out</button>
+        <button type="button" data-logout class="btn btn-outline btn-sm">Log Out</button>
       </div>
 
       <!-- Stats -->
@@ -107,12 +107,16 @@ import Layout from '../layouts/Layout.astro';
   </section>
 
   <script>
-    import { onAuthChange, signOut, getUserStats, getStudyHistory, getStudyHistoryByType, type StudyItem } from '../utils/auth';
+    import { onAuthChange, getCurrentUser, getUserStats, getStudyHistory, getStudyHistoryByType } from '../utils/auth';
 
     function init() {
       const loadingState = document.getElementById('loading-state')!;
       const notLoggedIn = document.getElementById('not-logged-in')!;
       const dashboard = document.getElementById('dashboard')!;
+
+      document.getElementById('history-filter')!.addEventListener('change', (e) => {
+        loadHistory((e.target as HTMLSelectElement).value);
+      });
 
       onAuthChange(async (user) => {
         loadingState.classList.add('hidden');
@@ -154,21 +158,10 @@ import Layout from '../layouts/Layout.astro';
 
         // Load history
         await loadHistory('all');
-
-        // History filter
-        document.getElementById('history-filter')!.addEventListener('change', (e) => {
-          loadHistory((e.target as HTMLSelectElement).value);
-        });
-
-        // Logout
-        document.getElementById('logout-btn')!.addEventListener('click', async () => {
-          await signOut();
-          window.location.href = '/';
-        });
       });
 
       async function loadHistory(type: string) {
-        const user = (await import('../utils/auth')).getCurrentUser();
+        const user = getCurrentUser();
         if (!user) return;
 
         const listEl = document.getElementById('history-list')!;
@@ -230,7 +223,6 @@ import Layout from '../layouts/Layout.astro';
       }
     }
 
-    document.addEventListener('DOMContentLoaded', init);
-    document.addEventListener('astro:page-load', init);
+    init();
   </script>
 </Layout>

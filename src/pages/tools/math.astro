@@ -135,7 +135,8 @@ import Layout from '../../layouts/Layout.astro';
 </Layout>
 
 <script>
-  import { callAI, parseJSON, canUseFreeTier, incrementUsage, getRemainingUses } from '../../utils/ai';
+  import { getCurrentUser, saveStudyItem } from '../../utils/auth';
+  import { callAI, parseJSON, canUseFreeTierAsync, incrementUsageAsync, getRemainingUsesAsync } from '../../utils/ai';
 
   function init() {
     const input = document.getElementById('math-input') as HTMLTextAreaElement;
@@ -219,7 +220,7 @@ import Layout from '../../layouts/Layout.astro';
         errorMsg.classList.remove('hidden');
         return;
       }
-      if (!canUseFreeTier()) {
+      if (!(await canUseFreeTierAsync())) {
         errorText.textContent = 'You\'ve used all 5 free generations today. Come back tomorrow or upgrade to Pro!';
         errorMsg.classList.remove('hidden');
         return;
@@ -272,8 +273,8 @@ ${problem.slice(0, 2000)}`;
       }
 
       // Track usage
-      incrementUsage();
-      const remaining = getRemainingUses();
+      await incrementUsageAsync();
+      const remaining = await getRemainingUsesAsync();
       const usageText = document.getElementById('usage-text');
       const usageFill = document.getElementById('usage-fill');
       if (usageText) usageText.textContent = `${remaining}/5 free`;
@@ -306,6 +307,18 @@ ${problem.slice(0, 2000)}`;
 
       results.classList.remove('hidden');
       results.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+      // Save to Firebase if logged in
+      const user = getCurrentUser();
+      if (user) {
+        saveStudyItem(user, {
+          type: 'math',
+          title: (problem || '').substring(0, 40) + '...',
+          input: problem,
+          output: JSON.stringify(data)
+        }).catch(console.error);
+      }
+    
     });
   }
 

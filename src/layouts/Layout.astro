@@ -21,6 +21,9 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <script is:inline>
+    try { document.documentElement.dataset.auth = localStorage.getItem('sg_auth') ? 'in' : 'out'; } catch (e) {}
+  </script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description" content={description} />
   <link rel="canonical" href={canonicalURL} />
@@ -104,13 +107,13 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
           </div>
         </div>
         <!-- Auth: Login button (shown when not logged in) -->
-        <a href="/login" id="nav-login-btn" class="btn btn-brand btn-sm hidden">Log In</a>
+        <a href="/login" id="nav-login-btn" class="auth-out btn btn-brand btn-sm">Log In</a>
         <!-- Auth: User avatar (shown when logged in) -->
-        <a href="/dashboard" id="nav-user-btn" class="hidden items-center gap-2 no-underline" style="color: var(--text);">
-          <div id="nav-avatar" class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold" style="background: rgba(99,102,241,0.15); color: #6366f1;"></div>
+        <a href="/dashboard" id="nav-user-btn" class="auth-in flex items-center gap-2 no-underline" style="color: var(--text);" title="My Dashboard">
+          <div id="nav-avatar" class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold overflow-hidden" style="background: rgba(99,102,241,0.15); color: #6366f1;"></div>
         </a>
         <!-- Auth: Logout button (shown when logged in) -->
-        <button id="nav-logout-btn" class="btn btn-ghost btn-sm hidden">Log Out</button>
+        <button type="button" data-logout class="auth-in btn btn-ghost btn-sm">Log Out</button>
         <button id="theme-toggle" class="btn btn-ghost btn-sm" style="padding: 0.5rem;" aria-label="Toggle theme">
           <svg id="icon-moon" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
           <svg id="icon-sun" class="w-5 h-5 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
@@ -133,6 +136,11 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
         <a href="/tools/planner" class="py-2 px-3 rounded-lg text-sm font-medium no-underline" style="color: var(--text);">📅 Study Planner</a>
         <a href="/tools/notes" class="py-2 px-3 rounded-lg text-sm font-medium no-underline" style="color: var(--text);">📒 Notes</a>
         <a href="/tools/youtube" class="py-2 px-3 rounded-lg text-sm font-medium no-underline" style="color: var(--text);">🎬 YouTube</a>
+      </div>
+      <div class="px-4 pb-4 pt-3 flex gap-2" style="border-top: 1px solid var(--border);">
+        <a href="/login" class="auth-out btn btn-brand btn-sm flex-1">Log In / Sign Up</a>
+        <a href="/dashboard" class="auth-in btn btn-outline btn-sm flex-1">My Dashboard</a>
+        <button type="button" data-logout class="auth-in btn btn-ghost btn-sm flex-1">Log Out</button>
       </div>
     </div>
   </nav>
@@ -266,50 +274,44 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
   <script>
     import { onAuthChange, signOut } from '../utils/auth';
 
-    function initNavAuth() {
-      const loginBtn = document.getElementById('nav-login-btn');
-      const logoutBtn = document.getElementById('nav-logout-btn');
-      const userBtn = document.getElementById('nav-user-btn');
+    // Any element with [data-logout] signs the user out (navbar, mobile menu, dashboard).
+    document.addEventListener('click', async (e) => {
+      const btn = (e.target as HTMLElement).closest<HTMLButtonElement>('[data-logout]');
+      if (!btn || btn.disabled) return;
+      const label = btn.textContent;
+      btn.disabled = true;
+      btn.textContent = 'Logging out...';
+      try {
+        await signOut();
+        window.location.href = '/';
+      } catch (err) {
+        console.error('Logout error:', err);
+        btn.disabled = false;
+        btn.textContent = label;
+        alert('Could not log out. Please check your connection and try again.');
+      }
+    });
+
+    onAuthChange((user) => {
+      document.documentElement.dataset.auth = user ? 'in' : 'out';
+      if (user) localStorage.setItem('sg_auth', '1');
+      else localStorage.removeItem('sg_auth');
+
       const navAvatar = document.getElementById('nav-avatar');
+      const textEl = document.getElementById('usage-text');
+      const fillEl = document.getElementById('usage-fill');
+      if (!user) return;
 
-      logoutBtn?.addEventListener('click', async () => {
-        try {
-          await signOut();
-          window.location.href = '/'; // optional: redirect to home after logout
-        } catch (error) {
-          console.error('Logout error:', error);
-        }
-      });
-
-      onAuthChange((user) => {
-        if (user) {
-          loginBtn?.classList.add('hidden');
-          userBtn?.classList.remove('hidden');
-          userBtn?.classList.add('flex');
-          logoutBtn?.classList.remove('hidden');
-          if (navAvatar) {
-            if (user.photoURL) {
-              navAvatar.innerHTML = `<img src="${user.photoURL}" class="w-8 h-8 rounded-full" alt="" />`;
-            } else {
-              navAvatar.textContent = (user.displayName || user.email || 'U')[0].toUpperCase();
-            }
-          }
-          // Update usage display for logged-in users (10/day)
-          const textEl = document.getElementById('usage-text');
-          const fillEl = document.getElementById('usage-fill');
-          if (textEl) textEl.textContent = '10/day';
-          if (fillEl) fillEl.style.width = '100%';
+      if (navAvatar) {
+        if (user.photoURL) {
+          navAvatar.innerHTML = `<img src="${user.photoURL}" class="w-8 h-8 rounded-full" alt="" referrerpolicy="no-referrer" />`;
         } else {
-          loginBtn?.classList.remove('hidden');
-          userBtn?.classList.add('hidden');
-          userBtn?.classList.remove('flex');
-          logoutBtn?.classList.add('hidden');
+          navAvatar.textContent = (user.displayName || user.email || 'U')[0].toUpperCase();
         }
-      });
-    }
-
-    document.addEventListener('DOMContentLoaded', initNavAuth);
-    document.addEventListener('astro:page-load', initNavAuth);
+      }
+      if (textEl) textEl.textContent = '10/day';
+      if (fillEl) fillEl.style.width = '100%';
+    });
   </script>
 </body>
 </html>

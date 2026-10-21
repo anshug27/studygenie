@@ -48,6 +48,8 @@ export async function signUpWithEmail(email: string, password: string, displayNa
 
 export async function signOut(): Promise<void> {
   await firebaseSignOut(auth);
+  localStorage.removeItem('sg_auth');
+  sessionStorage.removeItem('sg_current_text');
 }
 
 export async function resetPassword(email: string): Promise<void> {

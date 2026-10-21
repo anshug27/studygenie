@@ -459,3 +459,13 @@ textarea.input {
   padding: 0.25rem 1rem;
   border-radius: 9999px;
 }
+
+/* ===== AUTH VISIBILITY & UTILITY OVERRIDES ===== */
+/* Component classes above set `display`, which would otherwise beat Tailwind's `hidden`/`lg:hidden`. */
+.btn.hidden, .usage-bar.hidden { display: none; }
+@media (min-width: 640px) { .usage-bar.sm\:flex { display: flex; } }
+@media (min-width: 1024px) { .btn.lg\:hidden { display: none; } }
+
+/* Auth-aware elements: <html data-auth="in|out"> is set before paint from a cached hint, then confirmed by Firebase. */
+html[data-auth="in"] .auth-out,
+html:not([data-auth="in"]) .auth-in { display: none !important; }

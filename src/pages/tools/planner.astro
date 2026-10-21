@@ -193,7 +193,8 @@ import Layout from '../../layouts/Layout.astro';
 </Layout>
 
 <script>
-  import { callAI, parseJSON, canUseFreeTier, incrementUsage, getRemainingUses } from '../../utils/ai';
+  import { getCurrentUser, saveStudyItem } from '../../utils/auth';
+  import { callAI, parseJSON, canUseFreeTierAsync, incrementUsageAsync, getRemainingUsesAsync } from '../../utils/ai';
 
   function init() {
     const subjectInput = document.getElementById('subject-input') as HTMLInputElement;
@@ -334,7 +335,7 @@ import Layout from '../../layouts/Layout.astro';
         errorMsg.classList.remove('hidden');
         return;
       }
-      if (!canUseFreeTier()) {
+      if (!(await canUseFreeTierAsync())) {
         errorText.textContent = "You've used all 5 free generations today. Come back tomorrow or upgrade to Pro!";
         errorMsg.classList.remove('hidden');
         return;
@@ -400,8 +401,8 @@ Rules:
       }
 
       // Track usage
-      incrementUsage();
-      const remaining = getRemainingUses();
+      await incrementUsageAsync();
+      const remaining = await getRemainingUsesAsync();
       const usageText = document.getElementById('usage-text');
       const usageFill = document.getElementById('usage-fill');
       if (usageText) usageText.textContent = `${remaining}/5 free`;
@@ -478,6 +479,18 @@ Rules:
 
       results.classList.remove('hidden');
       results.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+      // Save to Firebase if logged in
+      const user = getCurrentUser();
+      if (user) {
+        saveStudyItem(user, {
+          type: 'planner',
+          title: (subject || '').substring(0, 40) + '...',
+          input: subject + ' - ' + topicsRaw,
+          output: JSON.stringify(data)
+        }).catch(console.error);
+      }
+    
     });
   }
 

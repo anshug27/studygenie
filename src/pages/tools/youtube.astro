@@ -140,7 +140,8 @@ import Layout from '../../layouts/Layout.astro';
 </Layout>
 
 <script>
-  import { callAI, youtubePrompt, parseJSON, canUseFreeTier, incrementUsage, getRemainingUses } from '../../utils/ai';
+  import { getCurrentUser, saveStudyItem } from '../../utils/auth';
+  import { callAI, youtubePrompt, parseJSON, canUseFreeTierAsync, incrementUsageAsync, getRemainingUsesAsync } from '../../utils/ai';
 
   function init() {
     const urlInput = document.getElementById('url-input') as HTMLInputElement;
@@ -211,7 +212,7 @@ import Layout from '../../layouts/Layout.astro';
         return;
       }
       // API key is handled server-side
-      if (!canUseFreeTier()) {
+      if (!(await canUseFreeTierAsync())) {
         errorText.textContent = 'You\'ve used all 5 free generations today. Come back tomorrow or upgrade to Pro!';
         errorMsg.classList.remove('hidden');
         return;
@@ -247,8 +248,8 @@ import Layout from '../../layouts/Layout.astro';
       }
 
       // Track usage
-      incrementUsage();
-      const remaining = getRemainingUses();
+      await incrementUsageAsync();
+      const remaining = await getRemainingUsesAsync();
       const usageTextEl = document.getElementById('usage-text');
       const usageFill = document.getElementById('usage-fill');
       if (usageTextEl) usageTextEl.textContent = `${remaining}/5 free`;
@@ -292,6 +293,18 @@ import Layout from '../../layouts/Layout.astro';
 
       results.classList.remove('hidden');
       results.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+      // Save to Firebase if logged in
+      const user = getCurrentUser();
+      if (user) {
+        saveStudyItem(user, {
+          type: 'youtube',
+          title: (transcript || '').substring(0, 40) + '...',
+          input: transcript,
+          output: JSON.stringify(data)
+        }).catch(console.error);
+      }
+    
     });
   }
 
